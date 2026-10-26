@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/vendor/maplibre-gl.css">
   <link rel="stylesheet" href="style.css">
   <!-- /FONTS -->
 </head>
@@ -146,20 +147,47 @@
     </div>
   </section>
 
-  <!-- EMPLACEMENT -->
-  <section class="light" id="emplacement">
+  <!-- EMPLACEMENT : carte 3D animée -->
+  <section class="map-section" id="emplacement">
+    <div class="wrap map-head">
+      <p class="kicker reveal">Emplacement</p>
+      <h2 class="section-title reveal">Côté port.<br><span class="muted-dark">Côté plage.</span></h2>
+    </div>
+    <div class="map-stage" id="mapStage">
+      <div class="map" id="map" role="img" aria-label="Vue 3D du quartier de l'Aiguillon à Arcachon, avec l'appartement, la plage, le bassin et le port de plaisance"></div>
+      <div class="map-badges" id="mapBadges">
+        <div class="badge"><b><span data-dist="sea_m">140</span> m</b><span>du bassin</span></div>
+        <div class="badge"><b><span data-dist="beach_m">181</span> m</b><span>de la plage</span></div>
+        <div class="badge"><b><span data-dist="marina_m">128</span> m</b><span>du port</span></div>
+      </div>
+      <div class="map-ctrl">
+        <button class="chip" type="button" data-view="overview">Vue d'ensemble</button>
+        <button class="chip" type="button" data-view="home">L'appartement</button>
+        <button class="chip chip-icon" type="button" id="mapSpin" aria-pressed="false" aria-label="Lancer ou arrêter la rotation">
+          <svg class="i-pause" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"/></svg>
+          <svg class="i-play" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
+        </button>
+      </div>
+      <p class="map-fallback" id="mapFallback" hidden>La carte 3D n'a pas pu se charger sur cet appareil.</p>
+    </div>
     <div class="wrap">
-      <h2 class="section-title reveal">Côté port.<br><span class="muted-light">Côté plage.</span></h2>
+      <p class="map-note">Distances à vol d'oiseau mesurées sur OpenStreetMap. Hauteurs des bâtiments estimées.</p>
+    </div>
+  </section>
+
+  <section class="light" id="a-pied">
+    <div class="wrap">
+      <h2 class="section-title reveal">Tout se fait à pied.</h2>
       <div class="distances">
-        <div class="dist reveal"><b>100 m</b><span>Plage et port de plaisance</span></div>
-        <div class="dist reveal"><b>100 m</b><span>Commerces</span></div>
+        <div class="dist reveal"><b>140 m</b><span>Le bassin</span></div>
+        <div class="dist reveal"><b>180 m</b><span>La plage</span></div>
         <div class="dist reveal"><b>0 m</b><span>Pistes cyclables</span></div>
         <div class="dist reveal"><b>1,5 km</b><span>Centre-ville</span></div>
       </div>
       <div class="coords reveal">
-        <p><span class="coords-num">44°39′20″ N · 1°08′42″ O</span><br><span class="dim">Position approximative. L'adresse exacte est communiquée après réservation.</span></p>
+        <p><span class="coords-num">Boulevard Chanzy · L'Aiguillon · Arcachon</span><br><span class="dim">Quartier du port de plaisance, côté bassin.</span></p>
         <div class="coords-links">
-          <a class="link" href="https://www.openstreetmap.org/?mlat=44.6557&amp;mlon=-1.145#map=16/44.6557/-1.145" target="_blank" rel="noopener">OpenStreetMap <span aria-hidden="true">›</span></a>
+          <a class="link" href="https://www.openstreetmap.org/?mlat=44.6557&amp;mlon=-1.145#map=17/44.6557/-1.145" target="_blank" rel="noopener">OpenStreetMap <span aria-hidden="true">›</span></a>
           <a class="link" href="https://www.google.com/maps/search/?api=1&amp;query=44.6557,-1.145" target="_blank" rel="noopener">Google Maps <span aria-hidden="true">›</span></a>
         </div>
       </div>
@@ -206,6 +234,7 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.js"></script>
 <script src="script.js"></script>
 <!-- /BODY -->
 </body>
