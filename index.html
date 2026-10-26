@@ -13,7 +13,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/vendor/maplibre-gl.css">
   <link rel="stylesheet" href="style.css">
   <!-- /FONTS -->
 </head>
@@ -67,7 +66,8 @@
         <h2 class="section-title">Côté port.<br><span class="grad">Côté plage.</span></h2>
       </div>
       <div class="map-frame" id="mapFrame">
-        <div class="map" id="map" role="img" aria-label="Vue 3D du quartier de l'Aiguillon à Arcachon, avec le T3, la plage, le bassin et le port de plaisance"></div>
+        <canvas class="map" id="mapCanvas" role="img" aria-label="Vue 3D du quartier de l'Aiguillon à Arcachon, avec le T3, la plage, le bassin et le port de plaisance"></canvas>
+        <p class="map-attrib">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></p>
         <div class="map-vignette" aria-hidden="true"></div>
         <div class="map-captions" aria-live="polite">
           <p class="cap" data-range="0,0.24"><span>Vu du ciel</span>Le bassin d'Arcachon.</p>
@@ -81,7 +81,6 @@
           <div class="badge"><b><span data-dist="marina_m">128</span> m</b><span>du port</span></div>
         </div>
         <div class="map-progress" aria-hidden="true"><span id="mapProgress"></span></div>
-        <p class="map-fallback" id="mapFallback" hidden>La carte 3D n'a pas pu se charger sur cet appareil.</p>
       </div>
     </div>
   </section>
@@ -218,7 +217,6 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.js"></script>
 <script src="script.js"></script>
 <!-- /BODY -->
 </body>

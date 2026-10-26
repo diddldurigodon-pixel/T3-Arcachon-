@@ -210,7 +210,9 @@ p { margin: 0; }
 .map-head { position: absolute; z-index: 3; left: 0; right: 0; top: calc(var(--safe-top) + var(--nav) + 6svh); text-align: center; padding-left: var(--gutter-l); padding-right: var(--gutter-r); will-change: transform, opacity; }
 .map-head .section-title { margin-bottom: 0; }
 .map-frame { position: absolute; inset: 0; z-index: 1; background: #141416; clip-path: inset(46% 9% 5% 9% round 28px); will-change: clip-path; }
-.map { position: absolute; inset: 0; }
+.map { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.map-attrib { position: absolute; z-index: 2; right: 12px; bottom: 10px; margin: 0; font-size: 10px; color: #8e8e93; }
+.map-attrib a { color: inherit; }
 .map .maplibregl-canvas { outline: none; }
 .map-vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse 80% 75% at 50% 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, .65) 100%), linear-gradient(180deg, rgba(0, 0, 0, .5) 0%, rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, .7) 100%); }
 .map-captions { position: absolute; z-index: 2; left: max(48px, env(safe-area-inset-left, 0px)); bottom: 12svh; right: 48px; display: grid; pointer-events: none; }

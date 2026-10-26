@@ -110,53 +110,81 @@
   }
 
   /* ---------- Carte 3D pilotée par le scroll ---------- */
+  // Le survol est pré-calculé en 120 images (vraie carte OpenStreetMap en 3D) :
+  // le scroll choisit l'image, avec un fondu entre deux images voisines.
   const mapSection = $('#emplacement');
   const mapHead = $('#mapHead');
   const mapFrame = $('#mapFrame');
-  const mapEl = $('#map');
+  const canvas = $('#mapCanvas');
+  const ctx = canvas.getContext('2d');
   const caps = $$('.cap', mapFrame).map((el) => ({ el, range: el.dataset.range.split(',').map(Number) }));
   const badges = $('#mapBadges');
   const mapBar = $('#mapProgress');
-  let map = null;
-  let mapReady = false;
-  let mapData = null;
-  let fades = [];
+  const FRAMES = 120;
+  let seq = null;
+  let frames = [];
+  let mapC = 0;
+  let drawnKey = '';
 
-  function mapFail() { $('#mapFallback').hidden = false; badges.classList.add('show'); }
-
-  function marker(cls, label) {
-    // MapLibre gère l'opacité du conteneur : l'apparition se fait sur l'élément intérieur
-    const el = document.createElement('div');
-    el.innerHTML = `<div class="mk mk-fade ${cls}"><span class="mk-label">${label}</span><span class="mk-stem"></span>${cls.includes('mk-home') ? '<span class="mk-dot"></span>' : ''}</div>`;
-    return el;
-  }
-
-  // Trajet de la caméra : du ciel au-dessus du bassin jusqu'au T3, en tournant
-  let keys = [];
-  const lerp = (a, b, t) => a + (b - a) * t;
-  function camera(c) {
-    let k = 0;
-    while (k < keys.length - 2 && c > keys[k + 1].c) k++;
-    const A = keys[k], B = keys[k + 1];
-    const t = ease(clamp((c - A.c) / (B.c - A.c)));
-    return {
-      center: [lerp(A.center[0], B.center[0], t), lerp(A.center[1], B.center[1], t)],
-      zoom: lerp(A.zoom, B.zoom, t),
-      pitch: lerp(A.pitch, B.pitch, t),
-      bearing: lerp(keys[0].bearing, keys[keys.length - 1].bearing, c),
+  const pickSeq = () => (innerWidth / innerHeight < 0.85 ? 'm' : 'd');
+  function loadSeq() {
+    seq = pickSeq();
+    frames = new Array(FRAMES).fill(null);
+    drawnKey = '';
+    // d'abord quelques images réparties sur tout le trajet, puis on remplit les trous
+    const order = [];
+    const seen = new Set();
+    [24, 8, 4, 2, 1].forEach((st) => { for (let i = 0; i < FRAMES; i += st) if (!seen.has(i)) { seen.add(i); order.push(i); } });
+    if (!seen.has(FRAMES - 1)) order.splice(1, 0, FRAMES - 1);
+    const mine = seq;
+    let next = 0;
+    const pump = () => {
+      if (mine !== seq || next >= order.length) return;
+      const i = order[next++];
+      const img = new Image();
+      img.decoding = 'async';
+      img.onload = () => { if (mine === seq) { frames[i] = img; drawSeq(true); } pump(); };
+      img.onerror = pump;
+      img.src = `assets/map/${seq}/${String(i).padStart(3, '0')}.webp`;
     };
+    for (let k = 0; k < 6; k++) pump();
   }
-
-  let lineK = -1;
-  function setLine(k) {
-    if (!map || Math.abs(k - lineK) < 0.002) return;
-    lineK = k;
-    const [a, b] = mapData.meta.beach_line;
-    map.getSource('dist').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [a, [lerp(a[0], b[0], k), lerp(a[1], b[1], k)]] } });
+  function nearestFrame(i) {
+    for (let d = 0; d < FRAMES; d++) {
+      if (frames[i - d]) return frames[i - d];
+      if (frames[i + d]) return frames[i + d];
+    }
+    return null;
+  }
+  function sizeCanvas() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.round(canvas.clientWidth * dpr);
+    const h = Math.round(canvas.clientHeight * dpr);
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; drawnKey = ''; }
+  }
+  function cover(img, alpha) {
+    const s = Math.max(canvas.width / img.width, canvas.height / img.height);
+    const w = img.width * s, h = img.height * s;
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+  }
+  function drawSeq(force) {
+    if (!seq) return;
+    const f = mapC * (FRAMES - 1);
+    const i0 = Math.floor(f);
+    const t = f - i0;
+    const a = frames[i0] || nearestFrame(i0);
+    const b = t > 0.01 ? frames[Math.min(FRAMES - 1, i0 + 1)] : null;
+    const key = `${f.toFixed(3)}|${a && a.src}|${b && b.src}|${canvas.width}`;
+    if (!a || (!force && key === drawnKey)) return;
+    drawnKey = key;
+    cover(a, 1);
+    if (b && b !== a) cover(b, t);
+    ctx.globalAlpha = 1;
   }
 
   let mapHeadBottom = 0;
-  const measureMap = () => { mapHeadBottom = mapHead.offsetTop + mapHead.offsetHeight; };
+  const measureMap = () => { mapHeadBottom = mapHead.offsetTop + mapHead.offsetHeight; sizeCanvas(); if (seq && seq !== pickSeq()) loadSeq(); };
 
   function updateMap(vh) {
     const r = box(mapSection);
@@ -172,7 +200,7 @@
       mapHead.style.opacity = (1 - clamp(e * 1.8)).toFixed(3);
       mapHead.style.transform = `translateY(${(-e * 60).toFixed(1)}px)`;
     }
-    // 2. la caméra tourne et zoome
+    // 2. la caméra tourne et zoome (image correspondante)
     const c = clamp((P - 0.06) / 0.88);
     mapBar.style.transform = `scaleX(${c.toFixed(4)})`;
     caps.forEach(({ el, range: [a, b] }) => {
@@ -181,86 +209,14 @@
       el.style.transform = `translateY(${((1 - o) * (c < a + 0.05 ? 30 : -30)).toFixed(1)}px)`;
     });
     badges.classList.toggle('show', c > 0.86);
-    if (!mapReady) return;
-    map.jumpTo(camera(c));
-    fades.forEach(([el, from]) => el.classList.toggle('show', c >= from));
-    setLine(ease(clamp((c - 0.5) / 0.2)));
-  }
-
-  function initMap(data) {
-    mapData = data;
-    const m = data.meta;
-    $$('[data-dist]', mapSection).forEach((el) => { if (m[el.dataset.dist] != null) el.textContent = m[el.dataset.dist]; });
-    const mob = isMobile();
-    keys = [
-      { c: 0, center: [-1.1470, 44.6590], zoom: mob ? 13.7 : 14.1, pitch: 25, bearing: -40 },
-      { c: 0.3, center: m.marina || m.house, zoom: mob ? 14.9 : 15.4, pitch: 48 },
-      { c: 0.62, center: [lerp(m.house[0], m.beach_line[1][0], 0.5), lerp(m.house[1], m.beach_line[1][1], 0.5)], zoom: mob ? 16.2 : 16.5, pitch: 58 },
-      { c: 0.9, center: m.house, zoom: mob ? 17.2 : 17.5, pitch: 66 },
-      { c: 1, center: m.house, zoom: mob ? 17.3 : 17.6, pitch: 66, bearing: 200 },
-    ];
-
-    map = new window.maplibregl.Map({
-      container: mapEl,
-      style: { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#1a1a1c' } }] },
-      ...camera(0),
-      maxPitch: 75,
-      interactive: false,
-      attributionControl: false,
-      fadeDuration: 0,
-    });
-    map.addControl(new window.maplibregl.AttributionControl({ compact: true, customAttribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }));
-
-    map.on('load', () => {
-      ['sea', 'water', 'beach', 'green', 'piers', 'roads', 'paths', 'buildings'].forEach((k) => map.addSource(k, { type: 'geojson', data: data[k] }));
-      map.addSource('dist', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [m.beach_line[0], m.beach_line[0]] } } });
-      map.addSource('home', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'Point', coordinates: m.house } } });
-
-      map.addLayer({ id: 'sea', type: 'fill', source: 'sea', paint: { 'fill-color': '#0d2f52' } });
-      map.addLayer({ id: 'water', type: 'fill', source: 'water', paint: { 'fill-color': '#0d2f52' } });
-      map.addLayer({ id: 'green', type: 'fill', source: 'green', paint: { 'fill-color': '#1d3324' } });
-      map.addLayer({ id: 'beach', type: 'fill', source: 'beach', paint: { 'fill-color': '#d9bf8c', 'fill-opacity': 0.92 } });
-      map.addLayer({ id: 'piers', type: 'fill', source: 'piers', paint: { 'fill-color': '#6b5e4c' } });
-      map.addLayer({ id: 'paths', type: 'line', source: 'paths', paint: { 'line-color': '#2c2c30', 'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.4, 17, 2.2] } });
-      map.addLayer({ id: 'roads', type: 'line', source: 'roads', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: {
-        'line-color': ['case', ['==', ['get', 'c'], 1], '#4a4a50', '#36363b'],
-        'line-width': ['interpolate', ['exponential', 1.6], ['zoom'], 13, ['case', ['==', ['get', 'c'], 1], 1.4, 0.7], 17, ['case', ['==', ['get', 'c'], 1], 12, 7], 18.5, ['case', ['==', ['get', 'c'], 1], 26, 15]],
-      } });
-      map.addLayer({ id: 'home-glow', type: 'circle', source: 'home', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 10, 17, 70, 18, 120], 'circle-color': '#2997ff', 'circle-opacity': 0.25, 'circle-blur': 1 } });
-      map.addLayer({ id: 'dist', type: 'line', source: 'dist', layout: { 'line-cap': 'round' }, paint: { 'line-color': '#f5d48a', 'line-width': 4, 'line-dasharray': [0.1, 2] } });
-      map.addLayer({ id: 'buildings', type: 'fill-extrusion', source: 'buildings', paint: {
-        'fill-extrusion-color': ['case', ['==', ['get', 'me'], 1], '#2997ff', ['interpolate', ['linear'], ['get', 'h'], 3, '#2b2b2f', 10, '#3a3a40', 20, '#4d4d55']],
-        'fill-extrusion-height': ['get', 'h'],
-        'fill-extrusion-base': ['get', 'mh'],
-        'fill-extrusion-opacity': 0.96,
-        'fill-extrusion-vertical-gradient': true,
-      } });
-      map.setLight({ anchor: 'map', color: '#ffffff', intensity: 0.42, position: [1.4, 210, 35] });
-
-      const add = (el, ll, from) => {
-        new window.maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(ll).addTo(map);
-        fades.push([el.firstChild, from]);
-      };
-      if (m.marina) add(marker('', 'Port de plaisance'), m.marina, 0.27);
-      add(marker('mk-beach', `Plage · ${m.beach_m} m`), m.beach_line[1], 0.6);
-      add(marker('mk-home', 'Le T3'), m.house, 0.12);
-
-      mapReady = true;
-      request();
-    });
+    mapC = c;
+    drawSeq(false);
   }
 
   measureMap();
   new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (!e.isIntersecting || map) return;
-      if (!window.maplibregl) { mapFail(); return; }
-      fetch('assets/geo/arcachon.json')
-        .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(initMap)
-        .catch(mapFail);
-    });
-  }, { rootMargin: '1200px 0px' }).observe(mapSection);
+    entries.forEach((e) => { if (e.isIntersecting && !seq) { sizeCanvas(); loadSeq(); } });
+  }, { rootMargin: '1500px 0px' }).observe(mapSection);
 
   /* ---------- Boucle principale ---------- */
   const bar = $('#navProgress');
