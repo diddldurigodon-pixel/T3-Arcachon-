@@ -9,7 +9,7 @@
   // Écart entre le scroll réel et le scroll amorti suivi par les animations
   let lag = 0;
   const box = (el) => { const b = el.getBoundingClientRect(); return { top: b.top + lag, bottom: b.bottom + lag, height: b.height }; };
-  const srcset = (name) => `${src(name, 800)} 800w, ${src(name, 1600)} 1600w, ${src(name, 2400)} 2400w`;
+  const srcset = (name) => `${src(name, 800)} 800w, ${src(name, 1600)} 1600w`;
 
   /* ---------- Photos ---------- */
   const photos = [
