@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>T3 neuf · Port de plaisance d'Arcachon</title>
+  <meta name="description" content="Visite interactive d'un T3 neuf de 50 m² avec jardin privatif plein sud, à 100 m du port de plaisance et de la plage d'Arcachon. Jusqu'à 4 voyageurs.">
+  <meta property="og:title" content="T3 neuf · Port de plaisance d'Arcachon">
+  <meta property="og:description" content="50 m², jardin plein sud, plage et port à 100 m. Visitez l'appartement pièce par pièce.">
+  <meta property="og:image" content="assets/img/og.jpg">
+  <meta name="theme-color" content="#0f2a3a">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preload" as="image" href="assets/img/plage-1600.webp" imagesrcset="assets/img/plage-800.webp 800w, assets/img/plage-1600.webp 1600w" imagesizes="100vw">
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <a class="brand" href="#top">T3 <span>·</span> Arcachon</a>
+  <nav class="topnav" aria-label="Sections">
+    <a href="#visite">Visite</a>
+    <a href="#equipements">Équipements</a>
+    <a href="#avis">Avis</a>
+    <a href="#emplacement">Emplacement</a>
+  </nav>
+  <a class="btn btn-small" href="https://www.airbnb.fr/rooms/50252958" target="_blank" rel="noopener">Réserver</a>
+  <div class="scrollbar" aria-hidden="true"><span id="scrollbar"></span></div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-media">
+      <img src="assets/img/plage-1600.webp" srcset="assets/img/plage-800.webp 800w, assets/img/plage-1600.webp 1600w" sizes="100vw" alt="La plage du bassin d'Arcachon, à 100 m de l'appartement" fetchpriority="high">
+    </div>
+    <div class="hero-content">
+      <p class="eyebrow">Arcachon · Nouvelle-Aquitaine</p>
+      <h1>Un T3 neuf à deux pas<br>du port et de la plage</h1>
+      <ul class="chips">
+        <li>50 m²</li>
+        <li>4 voyageurs</li>
+        <li>2 chambres</li>
+        <li>Jardin plein sud</li>
+        <li>★ 4,86 · 188 avis</li>
+      </ul>
+      <a class="btn" href="#intro">Commencer la visite</a>
+    </div>
+    <a class="scroll-hint" href="#intro" aria-label="Défiler vers la suite"><span></span></a>
+  </section>
+
+  <!-- INTRO -->
+  <section class="intro" id="intro">
+    <div class="wrap">
+      <p class="eyebrow reveal">Le logement</p>
+      <h2 class="reveal">Entrée indépendante, jardin privé, et le bassin au bout de la rue.</h2>
+      <p class="lead reveal">T3 neuf avec entrée indépendante dans une maison. Commerces et plages à 100 m, pistes cyclables au pied du logement, centre-ville à 1,5 km. Cuisine ouverte toute équipée, salon avec canapé, TV et wifi, salle d'eau avec douche et WC séparés.</p>
+      <div class="stats">
+        <div class="stat reveal"><strong data-count="50">50</strong><span>m² habitables</span></div>
+        <div class="stat reveal"><strong data-count="20">20</strong><span>m² de jardin sud</span></div>
+        <div class="stat reveal"><strong data-count="100">100</strong><span>m de la plage</span></div>
+        <div class="stat reveal"><strong data-count="1.5" data-decimals="1">1,5</strong><span>km du centre-ville</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISITE (scrollytelling) -->
+  <section class="tour" id="visite" aria-label="Visite de l'appartement">
+    <div class="stage" id="stage" aria-hidden="false">
+      <div class="stage-frames" id="frames"></div>
+      <div class="stage-ui">
+        <div class="stage-count"><span id="stageNum">01</span> / <span id="stageTotal">12</span></div>
+        <button class="stage-zoom" id="stageZoom" type="button" aria-label="Agrandir la photo">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <nav class="rail" id="rail" aria-label="Pièces"></nav>
+    </div>
+
+    <div class="steps">
+      <article class="step" data-img="port-quai" data-label="Quai">
+        <div class="card">
+          <p class="eyebrow">Arrivée</p>
+          <h3>Au bord du bassin</h3>
+          <p>Le logement se trouve dans une rue calme, à quelques pas du quai et des pontons. On se gare gratuitement dans la rue, puis on entre par une porte indépendante.</p>
+          <ul class="tags"><li>Stationnement gratuit</li><li>Entrée privée</li><li>Dépôt de bagages</li></ul>
+        </div>
+      </article>
+
+      <article class="step" data-img="jardin-1" data-label="Jardin">
+        <div class="card">
+          <p class="eyebrow">Extérieur</p>
+          <h3>Le jardin plein sud</h3>
+          <p>20 m² de jardin privatif exposé sud, à l'abri des regards. Table et chaises pour les petits-déjeuners au soleil ou les dîners dehors.</p>
+          <ul class="tags"><li>Jardin privé</li><li>Salon de jardin</li><li>Repas en plein air</li></ul>
+        </div>
+      </article>
+
+      <article class="step" data-img="jardin-2" data-label="Baie vitrée">
+        <div class="card">
+          <p class="eyebrow">Extérieur</p>
+          <h3>Dedans, dehors</h3>
+          <p>La grande baie vitrée relie directement le jardin à la pièce de vie : on passe de la table au transat sans y penser.</p>
+        </div>
+      </article>
+
+      <article class="step" data-img="sejour-mezzanine" data-label="Séjour" data-pos="50% 40%">
+        <div class="card">
+          <p class="eyebrow">Pièce de vie</p>
+          <h3>Un volume lumineux</h3>
+          <p>Le séjour s'élève sur toute la hauteur, avec la mezzanine qui surplombe la cuisine. Tout est neuf, clair, et pensé pour quatre.</p>
+        </div>
+      </article>
+
+      <article class="step" data-img="sejour" data-label="Cuisine">
+        <div class="card">
+          <p class="eyebrow">Pièce de vie</p>
+          <h3>Cuisine ouverte, toute équipée</h3>
+          <p>Lave-vaisselle, four, micro-ondes, plaques, réfrigérateur et congélateur. Côté petit-déjeuner : cafetière filtre, bouilloire et grille-pain.</p>
+          <ul class="tags"><li>Lave-vaisselle</li><li>Four</li><li>Micro-ondes</li><li>Table pour 4</li></ul>
+        </div>
+      </article>
+
+      <article class="step" data-img="salon" data-label="Salon">
+        <div class="card">
+          <p class="eyebrow">Pièce de vie</p>
+          <h3>Coin salon</h3>
+          <p>Canapé, TV 32 pouces, wifi et prise Ethernet. Un espace de travail avec bureau et chaise permet aussi de garder un œil sur ses mails.</p>
+          <ul class="tags"><li>Wifi</li><li>TV 32"</li><li>Espace de travail</li></ul>
+        </div>
+      </article>
+
+      <article class="step" data-img="chambre" data-label="Chambre" data-pos="50% 60%">
+        <div class="card">
+          <p class="eyebrow">Chambre 1</p>
+          <h3>La chambre des enfants</h3>
+          <p>Deux lits superposés et une armoire. Un lit parapluie et une baignoire bébé sont disponibles sur demande.</p>
+          <ul class="tags"><li>Lits superposés</li><li>Armoire</li><li>Lit parapluie</li></ul>
+        </div>
+      </article>
+
+      <article class="step" data-img="mezzanine" data-label="Mezzanine">
+        <div class="card">
+          <p class="eyebrow">Chambre 2</p>
+          <h3>La mezzanine</h3>
+          <p>On y monte par un escalier en bois assez raide. Là-haut, un velux laisse entrer la lumière au-dessus du séjour.</p>
+        </div>
+      </article>
+
+      <article class="step" data-img="mezzanine-lit" data-label="Lit 140">
+        <div class="card">
+          <p class="eyebrow">Chambre 2</p>
+          <h3>Lit double en 140</h3>
+          <p>Un grand lit, une armoire ancienne et des stores occultants pour faire la grasse matinée après une journée de plage.</p>
+          <ul class="tags"><li>Lit 140</li><li>Stores occultants</li><li>Oreillers en plus</li></ul>
+        </div>
+      </article>
+
+      <article class="step" data-img="salle-eau" data-label="Salle d'eau">
+        <div class="card">
+          <p class="eyebrow">Salle d'eau</p>
+          <h3>Douche vitrée</h3>
+          <p>Salle d'eau neuve avec grande douche, meuble vasque et sèche-serviettes. Sèche-cheveux fourni.</p>
+        </div>
+      </article>
+
+      <article class="step" data-img="wc" data-label="WC" data-pos="50% 55%">
+        <div class="card">
+          <p class="eyebrow">Salle d'eau</p>
+          <h3>WC séparés</h3>
+          <p>Pratique quand on est quatre : les toilettes sont indépendantes de la salle d'eau.</p>
+        </div>
+      </article>
+
+      <article class="step" data-img="port" data-label="Port">
+        <div class="card">
+          <p class="eyebrow">Le quartier</p>
+          <h3>Le port de plaisance à 100 m</h3>
+          <p>En sortant, le port, la plage et les pistes cyclables. Le centre d'Arcachon est à 1,5 km, à vélo ou à pied le long de l'eau.</p>
+          <a class="btn" href="#equipements">Voir tous les équipements</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- EQUIPEMENTS -->
+  <section class="section" id="equipements">
+    <div class="wrap">
+      <p class="eyebrow reveal">Ce que propose le logement</p>
+      <h2 class="reveal">Équipements</h2>
+      <div class="amenities">
+        <div class="amenity-group reveal">
+          <h3>Cuisine</h3>
+          <ul>
+            <li>Lave-vaisselle</li><li>Four inox</li><li>Micro-ondes</li><li>Plaques de cuisson</li>
+            <li>Réfrigérateur et congélateur</li><li>Cafetière filtre, bouilloire, grille-pain</li>
+            <li>Vaisselle, verres à vin, casseroles</li><li>Huile, sel et poivre</li>
+          </ul>
+        </div>
+        <div class="amenity-group reveal">
+          <h3>Confort</h3>
+          <ul>
+            <li>Wifi + routeur portable</li><li>Connexion Ethernet</li><li>TV 32 pouces</li>
+            <li>Espace de travail (bureau, chaise)</li><li>Ventilateurs, chauffage d'appoint</li>
+            <li>Stores occultants</li><li>Fer à repasser, étendoir</li><li>Sèche-cheveux</li>
+          </ul>
+        </div>
+        <div class="amenity-group reveal">
+          <h3>Extérieur & accès</h3>
+          <ul>
+            <li>Jardin privé de 20 m² plein sud</li><li>Mobilier et repas en plein air</li>
+            <li>Entrée privée</li><li>Stationnement gratuit dans la rue</li>
+            <li>Accès à la plage, au bord de l'eau</li><li>Cale de mise à l'eau pour bateaux</li>
+          </ul>
+        </div>
+        <div class="amenity-group reveal">
+          <h3>Famille & séjour</h3>
+          <ul>
+            <li>Lit parapluie</li><li>Baignoire pour bébé</li><li>Dépôt de bagages</li>
+            <li>Séjours de 28 jours et plus</li><li>Ménage possible pendant le séjour</li>
+            <li>Laverie automatique à proximité</li>
+          </ul>
+        </div>
+      </div>
+      <p class="not-included reveal"><strong>Non inclus :</strong> lave-linge, sèche-linge, climatisation, détecteur de monoxyde de carbone.</p>
+    </div>
+  </section>
+
+  <!-- AVIS -->
+  <section class="section section-dark" id="avis">
+    <div class="wrap">
+      <div class="rating-head">
+        <div class="reveal">
+          <p class="eyebrow">Ils y ont séjourné</p>
+          <p class="big-rating"><span data-count="4.86" data-decimals="2">4,86</span><small>/ 5</small></p>
+          <p class="muted">188 commentaires · 90 % de 5 étoiles</p>
+        </div>
+        <div class="host reveal">
+          <div class="host-badge">Superhôte</div>
+          <p><strong>Françoise et Gérard</strong><br>Hôtes depuis 5 ans · Français, anglais, espagnol</p>
+        </div>
+      </div>
+      <div class="bars">
+        <div class="bar reveal"><span>Propreté</span><i style="--v:.98"></i><b>4,9</b></div>
+        <div class="bar reveal"><span>Précision</span><i style="--v:.98"></i><b>4,9</b></div>
+        <div class="bar reveal"><span>Arrivée</span><i style="--v:1"></i><b>5,0</b></div>
+        <div class="bar reveal"><span>Communication</span><i style="--v:.98"></i><b>4,9</b></div>
+        <div class="bar reveal"><span>Emplacement</span><i style="--v:.98"></i><b>4,9</b></div>
+        <div class="bar reveal"><span>Qualité-prix</span><i style="--v:.96"></i><b>4,8</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EMPLACEMENT -->
+  <section class="section" id="emplacement">
+    <div class="wrap location">
+      <div>
+        <p class="eyebrow reveal">Emplacement</p>
+        <h2 class="reveal">Côté port, côté plage</h2>
+        <ul class="distances">
+          <li class="reveal"><b>100 m</b><span>Plage et port de plaisance</span></li>
+          <li class="reveal"><b>100 m</b><span>Commerces</span></li>
+          <li class="reveal"><b>0 m</b><span>Pistes cyclables</span></li>
+          <li class="reveal"><b>1,5 km</b><span>Centre-ville d'Arcachon</span></li>
+        </ul>
+        <p class="muted small reveal">L'emplacement sur la carte est approximatif, l'adresse exacte est communiquée après réservation.</p>
+      </div>
+      <div class="map reveal">
+        <iframe title="Carte du quartier du port d'Arcachon" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=-1.1620%2C44.6480%2C-1.1280%2C44.6634&amp;layer=mapnik&amp;marker=44.6557%2C-1.145"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFOS -->
+  <section class="section section-sand" id="infos">
+    <div class="wrap">
+      <p class="eyebrow reveal">Bon à savoir</p>
+      <h2 class="reveal">Règlement & sécurité</h2>
+      <div class="rules">
+        <div class="rule reveal"><b>4</b><span>voyageurs maximum</span></div>
+        <div class="rule reveal"><b>Non</b><span>animaux (sauf assistance)</span></div>
+        <div class="rule reveal"><b>Non</b><span>fumeur, vapotage compris</span></div>
+        <div class="rule reveal"><b>Non</b><span>fêtes ni soirées</span></div>
+      </div>
+      <p class="muted reveal">Escalier raide vers la mezzanine · plan d'eau à proximité · détecteur de fumée installé · caméras de surveillance extérieures présentes sur place · pas de place de parking privée.</p>
+    </div>
+  </section>
+
+  <!-- GALERIE -->
+  <section class="section" id="galerie">
+    <div class="wrap">
+      <p class="eyebrow reveal">Toutes les photos</p>
+      <h2 class="reveal">Galerie</h2>
+      <div class="gallery" id="gallery"></div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="cta-media"><img src="assets/img/port-1600.webp" srcset="assets/img/port-800.webp 800w, assets/img/port-1600.webp 1600w" sizes="100vw" alt="" loading="lazy"></div>
+    <div class="cta-content reveal">
+      <h2>Prêt à poser vos valises ?</h2>
+      <p>Disponibilités, tarifs et réservation sur Airbnb.</p>
+      <a class="btn btn-light" href="https://www.airbnb.fr/rooms/50252958" target="_blank" rel="noopener">Voir les disponibilités</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>T3 neuf · Port de plaisance d'Arcachon · N° d'enregistrement 3300900143367</p>
+  <p class="muted">Photos et informations issues de l'annonce Airbnb des hôtes.</p>
+</footer>
+
+<dialog class="lightbox" id="lightbox" aria-label="Photo en plein écran">
+  <img id="lbImg" alt="">
+  <p class="lb-caption" id="lbCaption"></p>
+  <button class="lb-btn lb-close" id="lbClose" type="button" aria-label="Fermer">✕</button>
+  <button class="lb-btn lb-prev" id="lbPrev" type="button" aria-label="Photo précédente">‹</button>
+  <button class="lb-btn lb-next" id="lbNext" type="button" aria-label="Photo suivante">›</button>
+</dialog>
+
+<script src="script.js" defer></script>
+</body>
+</html>
