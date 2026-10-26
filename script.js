@@ -110,7 +110,7 @@
   }
 
   /* ---------- Carte 3D pilotée par le scroll ---------- */
-  // Le survol est pré-calculé en 120 images (vraie carte OpenStreetMap en 3D) :
+  // Le survol est pré-calculé en 240 images (vraie carte OpenStreetMap en 3D) :
   // le scroll choisit l'image, avec un fondu entre deux images voisines.
   const mapSection = $('#emplacement');
   const mapHead = $('#mapHead');
@@ -120,7 +120,7 @@
   const caps = $$('.cap', mapFrame).map((el) => ({ el, range: el.dataset.range.split(',').map(Number) }));
   const badges = $('#mapBadges');
   const mapBar = $('#mapProgress');
-  const FRAMES = 120;
+  const FRAMES = 240;
   let seq = null;
   let frames = [];
   let mapC = 0;
@@ -134,20 +134,22 @@
     // d'abord quelques images réparties sur tout le trajet, puis on remplit les trous
     const order = [];
     const seen = new Set();
-    [24, 8, 4, 2, 1].forEach((st) => { for (let i = 0; i < FRAMES; i += st) if (!seen.has(i)) { seen.add(i); order.push(i); } });
+    [40, 16, 8, 4, 2, 1].forEach((st) => { for (let i = 0; i < FRAMES; i += st) if (!seen.has(i)) { seen.add(i); order.push(i); } });
     if (!seen.has(FRAMES - 1)) order.splice(1, 0, FRAMES - 1);
     const mine = seq;
     let next = 0;
     const pump = () => {
       if (mine !== seq || next >= order.length) return;
       const i = order[next++];
-      const img = new Image();
-      img.decoding = 'async';
-      img.onload = () => { if (mine === seq) { frames[i] = img; drawSeq(true); } pump(); };
-      img.onerror = pump;
-      img.src = `assets/map/${seq}/${String(i).padStart(3, '0')}.webp`;
+      // image décodée hors du fil principal : pas d'à-coup au moment de l'afficher
+      fetch(`assets/map/${seq}/${String(i).padStart(3, '0')}.webp`)
+        .then((res) => res.blob())
+        .then((blob) => (window.createImageBitmap ? createImageBitmap(blob) : new Promise((ok, ko) => { const im = new Image(); im.onload = () => ok(im); im.onerror = ko; im.src = URL.createObjectURL(blob); })))
+        .then((bmp) => { if (mine === seq) { frames[i] = bmp; drawSeq(true); } })
+        .catch(() => {})
+        .finally(pump);
     };
-    for (let k = 0; k < 6; k++) pump();
+    for (let k = 0; k < 8; k++) pump();
   }
   function nearestFrame(i) {
     for (let d = 0; d < FRAMES; d++) {
@@ -175,7 +177,7 @@
     const t = f - i0;
     const a = frames[i0] || nearestFrame(i0);
     const b = t > 0.01 ? frames[Math.min(FRAMES - 1, i0 + 1)] : null;
-    const key = `${f.toFixed(3)}|${a && a.src}|${b && b.src}|${canvas.width}`;
+    const key = `${f.toFixed(3)}|${frames.indexOf(a)}|${b ? i0 + 1 : -1}|${canvas.width}`;
     if (!a || (!force && key === drawnKey)) return;
     drawnKey = key;
     cover(a, 1);
