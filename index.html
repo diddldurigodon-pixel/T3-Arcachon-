@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#0f2a3a">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="preload" as="image" href="assets/img/plage-1600.webp" imagesrcset="assets/img/plage-800.webp 800w, assets/img/plage-1600.webp 1600w" imagesizes="100vw">
 </head>
@@ -36,9 +36,9 @@
     <div class="hero-media">
       <img src="assets/img/plage-1600.webp" srcset="assets/img/plage-800.webp 800w, assets/img/plage-1600.webp 1600w" sizes="100vw" alt="La plage du bassin d'Arcachon, à 100 m de l'appartement" fetchpriority="high">
     </div>
-    <div class="hero-content">
-      <p class="eyebrow">Arcachon · Nouvelle-Aquitaine</p>
-      <h1>Un T3 neuf à deux pas<br>du port et de la plage</h1>
+    <div class="hero-content wrap">
+      <p class="eyebrow">44°39′ N · 1°08′ O · Arcachon</p>
+      <h1>Un T3 neuf <em>à 100 m</em> du port et de la plage</h1>
       <ul class="chips">
         <li>50 m²</li>
         <li>4 voyageurs</li>
@@ -265,10 +265,15 @@
           <li class="reveal"><b>0 m</b><span>Pistes cyclables</span></li>
           <li class="reveal"><b>1,5 km</b><span>Centre-ville d'Arcachon</span></li>
         </ul>
-        <p class="muted small reveal">L'emplacement sur la carte est approximatif, l'adresse exacte est communiquée après réservation.</p>
       </div>
-      <div class="map reveal">
-        <iframe title="Carte du quartier du port d'Arcachon" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=-1.1620%2C44.6480%2C-1.1280%2C44.6634&amp;layer=mapnik&amp;marker=44.6557%2C-1.145"></iframe>
+      <div class="chart-card reveal">
+        <p class="eyebrow">Position approximative</p>
+        <p class="coords">44°39′20″ N<br>1°08′42″ O</p>
+        <p>Quartier du port de plaisance, côté bassin. L'adresse exacte est communiquée après réservation.</p>
+        <div class="chart-links">
+          <a class="btn btn-small" href="https://www.openstreetmap.org/?mlat=44.6557&amp;mlon=-1.145#map=16/44.6557/-1.145" target="_blank" rel="noopener">OpenStreetMap</a>
+          <a class="btn btn-small" href="https://www.google.com/maps/search/?api=1&amp;query=44.6557,-1.145" target="_blank" rel="noopener">Google Maps</a>
+        </div>
       </div>
     </div>
   </section>
@@ -309,7 +314,8 @@
 </main>
 
 <footer class="footer">
-  <p>T3 neuf · Port de plaisance d'Arcachon · N° d'enregistrement 3300900143367</p>
+  <p>T3 neuf · Port de plaisance d'Arcachon</p>
+  <p class="mono muted">N° d'enregistrement 3300900143367</p>
   <p class="muted">Photos et informations issues de l'annonce Airbnb des hôtes.</p>
 </footer>
 
