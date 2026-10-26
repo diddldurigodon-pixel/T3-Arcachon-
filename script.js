@@ -10,7 +10,6 @@
 
   /* ---------- Photos ---------- */
   const photos = [
-    { name: 'plage', alt: 'La plage', note: 'À 100 m' },
     { name: 'jardin-1', alt: 'Le jardin', note: '20 m² plein sud' },
     { name: 'jardin-2', alt: 'La baie vitrée', note: 'Du jardin au séjour' },
     { name: 'sejour-mezzanine', alt: 'Le séjour', note: 'Avec mezzanine', portrait: true },
@@ -24,7 +23,6 @@
     { name: 'port', alt: 'Le port de plaisance', note: 'À 100 m' },
     { name: 'port-quai', alt: 'Le quai', note: 'Au bout de la rue' },
   ];
-  const indexOf = (name) => photos.findIndex((p) => p.name === name);
 
   /* ---------- Défilement fluide ---------- */
   let lenis = null;
@@ -91,61 +89,7 @@
     words.forEach((w, i) => w.classList.toggle('on', i < n));
   }
 
-  /* ---------- Visite plein écran ---------- */
-  const tour = $('#tour');
-  const slides = $$('.slide', tour);
-  const framesEl = $('#tourFrames');
-  const nav = $('#tourNav');
-  const count = $('#tourCount');
-  tour.style.setProperty('--n', slides.length);
-
-  slides.forEach((s, i) => {
-    const name = s.dataset.img;
-    const f = document.createElement('div');
-    f.className = 'frame';
-    f.innerHTML = `<img src="${src(name, 1600)}" srcset="${srcset(name)}" sizes="100vw" alt="${photos[indexOf(name)].alt}" ${i > 1 ? 'loading="lazy"' : ''} decoding="async">`;
-    if (s.dataset.pos) f.firstChild.style.objectPosition = s.dataset.pos;
-    framesEl.appendChild(f);
-
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = s.dataset.label;
-    b.addEventListener('click', () => {
-      const top = tour.getBoundingClientRect().top + scrollY;
-      scrollToY(top + ((i + 0.35) / slides.length) * (tour.offsetHeight - innerHeight));
-    });
-    nav.appendChild(b);
-  });
-  const frames = $$('.frame', framesEl);
-  const navBtns = $$('button', nav);
-  let current = -1;
-
-  function setSlide(i) {
-    if (i === current) return;
-    current = i;
-    frames.forEach((f, k) => f.classList.toggle('active', k === i));
-    slides.forEach((s, k) => s.classList.toggle('active', k === i));
-    navBtns.forEach((b, k) => {
-      b.classList.toggle('active', k === i);
-      if (k === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
-    });
-    count.textContent = `${String(i + 1).padStart(2, '0')} / ${slides.length}`;
-    const b = navBtns[i];
-    if (nav.scrollWidth > nav.clientWidth) {
-      nav.scrollTo({ left: b.offsetLeft - nav.clientWidth / 2 + b.offsetWidth / 2, behavior: reduced ? 'auto' : 'smooth' });
-    }
-  }
-
-  function updateTour(vh) {
-    const r = tour.getBoundingClientRect();
-    const p = clamp(-r.top / (r.height - vh));
-    const x = p * slides.length;
-    const i = Math.min(slides.length - 1, Math.floor(x));
-    setSlide(i);
-    if (!reduced && r.top < vh && r.bottom > 0) frames[i].style.setProperty('--p', clamp(x - i).toFixed(3));
-  }
-
-  /* ---------- Parallaxe douce des photos ---------- */
+  /* ---------- Parallaxe douce  /* ---------- Parallaxe douce des photos ---------- */
   const tilePhotos = $$('.tile-photo');
   const finale = $('#finale');
   function updateParallax(vh) {
@@ -172,7 +116,6 @@
     bar.style.transform = `scaleX(${max > 0 ? (scrollY / max).toFixed(4) : 0})`;
     updateHero(vh);
     updateStatement(vh);
-    updateTour(vh);
     updateParallax(vh);
   }
   const request = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
@@ -266,5 +209,4 @@
     sx = null;
     if (Math.abs(dx) > 50) show(lbIndex + (dx < 0 ? 1 : -1));
   });
-  $('#tourZoom').addEventListener('click', () => openLightbox(indexOf(slides[Math.max(0, current)].dataset.img)));
 })();
