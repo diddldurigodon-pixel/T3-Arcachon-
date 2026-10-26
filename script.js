@@ -292,6 +292,76 @@
   update();
   document.fonts && document.fonts.ready.then(() => { measure(); measureMap(); update(); });
 
+  /* ---------- Micro-animations ---------- */
+  // Titres : chaque mot devient un bloc qui monte à son tour
+  $$('.section-title, .finale-title, .small-title').forEach((title) => {
+    if (title.closest('.map-head')) return;
+    let w = 0;
+    [...title.childNodes].forEach((node) => {
+      if (node.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        node.textContent.split(/(\s+)/).forEach((part) => {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+          const span = document.createElement('span');
+          span.className = 'wd';
+          span.style.setProperty('--w', w++);
+          span.textContent = part;
+          frag.appendChild(span);
+        });
+        title.replaceChild(frag, node);
+      } else if (node.nodeType === 1 && node.tagName !== 'BR') {
+        node.classList.add('wd');
+        node.style.setProperty('--w', w++);
+      }
+    });
+    title.classList.add('reveal');
+  });
+
+  // Cascades : un petit décalage pour chaque élément d'un groupe
+  $$('.stagger').forEach((g) => [...g.children].forEach((c, i) => c.style.setProperty('--i', i)));
+
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (finePointer && !reduced) {
+    // Tuiles : inclinaison 3D et reflet qui suit la souris
+    $$('.tile').forEach((t) => {
+      t.addEventListener('pointermove', (e) => {
+        const r = t.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width;
+        const y = (e.clientY - r.top) / r.height;
+        t.classList.add('tilting');
+        t.style.setProperty('--ry', `${((x - 0.5) * 7).toFixed(2)}deg`);
+        t.style.setProperty('--rx', `${((0.5 - y) * 7).toFixed(2)}deg`);
+        t.style.setProperty('--gx', `${(x * 100).toFixed(1)}%`);
+        t.style.setProperty('--gy', `${(y * 100).toFixed(1)}%`);
+      });
+      t.addEventListener('pointerleave', () => {
+        t.classList.remove('tilting');
+        t.style.setProperty('--rx', '0deg');
+        t.style.setProperty('--ry', '0deg');
+      });
+    });
+    // Boutons : légèrement attirés par la souris
+    $$('.pill').forEach((b) => {
+      b.addEventListener('pointermove', (e) => {
+        const r = b.getBoundingClientRect();
+        b.style.setProperty('--mx', `${((e.clientX - r.left - r.width / 2) * 0.18).toFixed(1)}px`);
+        b.style.setProperty('--my', `${((e.clientY - r.top - r.height / 2) * 0.28).toFixed(1)}px`);
+      });
+      b.addEventListener('pointerleave', () => { b.style.setProperty('--mx', '0px'); b.style.setProperty('--my', '0px'); });
+    });
+  }
+
+  // Barre de navigation : se cache quand on descend, revient quand on remonte
+  const navEl = $('#nav');
+  let lastY = scrollY;
+  addEventListener('scroll', () => {
+    const y = scrollY;
+    if (Math.abs(y - lastY) < 6) return;
+    navEl.classList.toggle('hide', y > lastY && y > innerHeight * 0.8);
+    lastY = y;
+  }, { passive: true });
+
   /* ---------- Apparitions et compteurs ---------- */
   const countUp = (el) => {
     const end = parseFloat(el.dataset.count);
@@ -320,10 +390,12 @@
   const carousel = $('#carousel');
   photos.forEach((p, i) => {
     const fig = document.createElement('figure');
-    fig.className = 'shot';
+    fig.className = 'shot reveal';
+    fig.style.setProperty('--i', i);
     fig.innerHTML = `<button type="button" class="shot-img" aria-label="Agrandir : ${p.alt}" style="aspect-ratio:${p.portrait ? '3 / 4' : '4 / 3'}"><img src="${src(p.name, 800)}" srcset="${srcset(p.name)}" sizes="(max-width: 760px) 90vw, 60vw" alt="${p.alt}" loading="lazy" decoding="async"></button><figcaption>${p.alt}<span>${p.note}</span></figcaption>`;
     $('button', fig).addEventListener('click', () => openLightbox(i));
     carousel.appendChild(fig);
+    io.observe(fig);
   });
   const prev = $('#carPrev');
   const next = $('#carNext');
