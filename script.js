@@ -2,145 +2,197 @@
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isMobile = () => innerWidth <= 820;
+  const isMobile = () => innerWidth <= 760;
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const src = (name, w) => `assets/img/${name}-${w}.webp`;
-  const srcset = (name) => `${src(name, 800)} 800w, ${src(name, 1600)} 1600w`;
+  const srcset = (name) => `${src(name, 800)} 800w, ${src(name, 1600)} 1600w, ${src(name, 2400)} 2400w`;
 
-  /* ---------- Photos (ordre de la galerie) ---------- */
+  /* ---------- Photos ---------- */
   const photos = [
-    { name: 'plage', alt: 'La plage, à 100 m' },
-    { name: 'port', alt: 'Le port de plaisance, à 100 m' },
-    { name: 'port-quai', alt: 'Le quai, au bout de la rue' },
-    { name: 'jardin-1', alt: 'Jardin privatif plein sud' },
-    { name: 'jardin-2', alt: 'Jardin et baie vitrée' },
-    { name: 'sejour-mezzanine', alt: 'Séjour et mezzanine' },
-    { name: 'sejour', alt: 'Cuisine ouverte et salon' },
-    { name: 'salon', alt: 'Coin TV' },
-    { name: 'chambre', alt: 'Chambre avec lits superposés' },
-    { name: 'mezzanine', alt: 'Mezzanine' },
-    { name: 'mezzanine-lit', alt: 'Lit 140 en mezzanine' },
-    { name: 'salle-eau', alt: "Salle d'eau" },
-    { name: 'wc', alt: 'WC séparés' },
+    { name: 'plage', alt: 'La plage', note: 'À 100 m' },
+    { name: 'jardin-1', alt: 'Le jardin', note: '20 m² plein sud' },
+    { name: 'jardin-2', alt: 'La baie vitrée', note: 'Du jardin au séjour' },
+    { name: 'sejour-mezzanine', alt: 'Le séjour', note: 'Avec mezzanine', portrait: true },
+    { name: 'sejour', alt: 'La cuisine', note: 'Ouverte et équipée' },
+    { name: 'salon', alt: 'Le salon', note: 'TV, wifi, bureau' },
+    { name: 'chambre', alt: 'La chambre', note: 'Lits superposés', portrait: true },
+    { name: 'mezzanine', alt: 'La mezzanine', note: 'Sous le velux' },
+    { name: 'mezzanine-lit', alt: 'Le lit 140', note: 'Stores occultants' },
+    { name: 'salle-eau', alt: "La salle d'eau", note: 'Douche vitrée' },
+    { name: 'wc', alt: 'Les WC', note: 'Séparés', portrait: true },
+    { name: 'port', alt: 'Le port de plaisance', note: 'À 100 m' },
+    { name: 'port-quai', alt: 'Le quai', note: 'Au bout de la rue' },
   ];
-  const altOf = (name) => (photos.find((p) => p.name === name) || {}).alt || '';
+  const indexOf = (name) => photos.findIndex((p) => p.name === name);
 
-  /* ---------- Visite : construit la scène depuis les étapes ---------- */
-  const steps = $$('.step');
-  const frames = $('#frames');
-  const rail = $('#rail');
-  const stage = $('#stage');
+  /* ---------- Défilement fluide ---------- */
+  let lenis = null;
+  if (!reduced && window.Lenis) {
+    lenis = new window.Lenis({ lerp: 0.085, smoothWheel: true });
+    const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
+    requestAnimationFrame(raf);
+  }
+  const scrollToY = (y) => {
+    if (lenis) lenis.scrollTo(y, { duration: 1.4 });
+    else scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
+  };
+  $$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
+    const id = a.getAttribute('href');
+    const target = id === '#top' ? null : $(id);
+    if (id !== '#top' && !target) return;
+    e.preventDefault();
+    scrollToY(target ? target.getBoundingClientRect().top + scrollY - 52 : 0);
+  }));
 
-  steps.forEach((step, i) => {
-    const name = step.dataset.img;
+  /* ---------- Accueil : la photo s'ouvre ---------- */
+  const hero = $('#hero');
+  const head = $('#heroHead');
+  const media = $('#heroMedia');
+  const heroImg = $('img', media);
+  const cap = $('#heroCaption');
+  let headBottom = 0;
+  const measure = () => { headBottom = head.offsetTop + head.offsetHeight; };
+
+  function updateHero(vh) {
+    const r = hero.getBoundingClientRect();
+    if (r.bottom < 0 || reduced) return;
+    const p = clamp(-r.top / (hero.offsetHeight - vh));
+    const e = ease(clamp(p / 0.7));
+    const vw = innerWidth;
+    const t0 = Math.min(headBottom + (isMobile() ? 28 : 44), vh * 0.72);
+    const s0 = isMobile() ? 16 : Math.max(32, vw * 0.09);
+    const b0 = isMobile() ? 20 : vh * 0.05;
+    const t = t0 * (1 - e), s = s0 * (1 - e), b = b0 * (1 - e);
+    media.style.clipPath = `inset(${t}px ${s}px ${b}px ${s}px round ${28 * (1 - e)}px)`;
+    heroImg.style.setProperty('--ty', `${((t - b) / 2).toFixed(1)}px`);
+    heroImg.style.setProperty('--z', (1.18 - 0.18 * e).toFixed(4));
+    head.style.opacity = (1 - clamp(e * 1.7)).toFixed(3);
+    head.style.transform = `translateY(${(-e * 70).toFixed(1)}px) scale(${(1 - e * 0.05).toFixed(4)})`;
+    cap.style.opacity = clamp((p - 0.72) / 0.18).toFixed(3);
+    cap.style.transform = `translateY(${(20 * (1 - clamp((p - 0.72) / 0.18))).toFixed(1)}px)`;
+  }
+
+  /* ---------- Manifeste : mot par mot ---------- */
+  const statement = $('#statement');
+  const stText = $('#statementText');
+  stText.innerHTML = stText.textContent.trim().split(/\s+/).map((w) => `<span class="w">${w}</span>`).join(' ');
+  const words = $$('.w', stText);
+  if (reduced) words.forEach((w) => w.classList.add('on'));
+  let litCount = -1;
+  function updateStatement(vh) {
+    if (reduced) return;
+    const r = stText.getBoundingClientRect();
+    if (r.top > vh || r.bottom < 0) return;
+    const p = clamp((vh * 0.78 - r.top) / (r.height + vh * 0.2));
+    const n = Math.round(p * words.length);
+    if (n === litCount) return;
+    litCount = n;
+    words.forEach((w, i) => w.classList.toggle('on', i < n));
+  }
+
+  /* ---------- Visite plein écran ---------- */
+  const tour = $('#tour');
+  const slides = $$('.slide', tour);
+  const framesEl = $('#tourFrames');
+  const nav = $('#tourNav');
+  const count = $('#tourCount');
+  tour.style.setProperty('--n', slides.length);
+
+  slides.forEach((s, i) => {
+    const name = s.dataset.img;
     const f = document.createElement('div');
     f.className = 'frame';
-    f.innerHTML = `<img src="${src(name, 1600)}" srcset="${srcset(name)}" sizes="(max-width: 820px) 100vw, 60vw" alt="${altOf(name)}" ${i > 1 ? 'loading="lazy"' : ''} decoding="async">`;
-    if (step.dataset.pos) f.firstChild.style.objectPosition = step.dataset.pos;
-    frames.appendChild(f);
+    f.innerHTML = `<img src="${src(name, 1600)}" srcset="${srcset(name)}" sizes="100vw" alt="${photos[indexOf(name)].alt}" ${i > 1 ? 'loading="lazy"' : ''} decoding="async">`;
+    if (s.dataset.pos) f.firstChild.style.objectPosition = s.dataset.pos;
+    framesEl.appendChild(f);
 
     const b = document.createElement('button');
     b.type = 'button';
-    b.innerHTML = `<span>${step.dataset.label}</span>`;
-    b.setAttribute('aria-label', `Aller à : ${step.dataset.label}`);
-    b.addEventListener('click', () => goToStep(i));
-    rail.appendChild(b);
+    b.textContent = s.dataset.label;
+    b.addEventListener('click', () => {
+      const top = tour.getBoundingClientRect().top + scrollY;
+      scrollToY(top + ((i + 0.35) / slides.length) * (tour.offsetHeight - innerHeight));
+    });
+    nav.appendChild(b);
   });
-  const frameEls = $$('.frame', frames);
-  const railBtns = $$('button', rail);
-  $('#stageTotal').textContent = String(steps.length).padStart(2, '0');
-
-  function goToStep(i) {
-    const top = steps[i].getBoundingClientRect().top + scrollY;
-    // mobile : le haut de l'étape juste sous la photo ; desktop : carte centrée
-    const y = isMobile() ? top - stage.offsetHeight + 2 : top;
-    scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
-  }
-
+  const frames = $$('.frame', framesEl);
+  const navBtns = $$('button', nav);
   let current = -1;
-  function setActive(i) {
+
+  function setSlide(i) {
     if (i === current) return;
     current = i;
-    frameEls.forEach((f, k) => f.classList.toggle('active', k === i));
-    steps.forEach((s, k) => s.classList.toggle('active', k === i));
-    railBtns.forEach((b, k) => {
+    frames.forEach((f, k) => f.classList.toggle('active', k === i));
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    navBtns.forEach((b, k) => {
       b.classList.toggle('active', k === i);
       if (k === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
     });
-    $('#stageNum').textContent = String(i + 1).padStart(2, '0');
-    // Mobile : garde la pastille active visible dans la barre horizontale
-    if (isMobile()) {
-      const b = railBtns[i];
-      rail.scrollLeft = b.offsetLeft - rail.clientWidth / 2 + b.offsetWidth / 2;
+    count.textContent = `${String(i + 1).padStart(2, '0')} / ${slides.length}`;
+    const b = navBtns[i];
+    if (nav.scrollWidth > nav.clientWidth) {
+      nav.scrollTo({ left: b.offsetLeft - nav.clientWidth / 2 + b.offsetWidth / 2, behavior: reduced ? 'auto' : 'smooth' });
     }
   }
 
-  /* ---------- Boucle de scroll (une seule, en rAF) ---------- */
-  const topbar = $('#topbar');
-  const bar = $('#scrollbar');
-  const hero = $('#hero');
-  const cta = $('.cta');
-  let ticking = false;
+  function updateTour(vh) {
+    const r = tour.getBoundingClientRect();
+    const p = clamp(-r.top / (r.height - vh));
+    const x = p * slides.length;
+    const i = Math.min(slides.length - 1, Math.floor(x));
+    setSlide(i);
+    if (!reduced && r.top < vh && r.bottom > 0) frames[i].style.setProperty('--p', clamp(x - i).toFixed(3));
+  }
 
-  function onScroll() {
+  /* ---------- Parallaxe douce des photos ---------- */
+  const tilePhotos = $$('.tile-photo');
+  const finale = $('#finale');
+  function updateParallax(vh) {
+    if (reduced) return;
+    tilePhotos.forEach((t) => {
+      const r = t.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > vh) return;
+      const p = clamp((vh - r.top) / (vh + r.height));
+      t.style.setProperty('--s', (1.14 - 0.14 * p).toFixed(4));
+    });
+    const r = finale.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      finale.style.setProperty('--fz', (1.18 - 0.18 * clamp((vh - r.top) / vh)).toFixed(4));
+    }
+  }
+
+  /* ---------- Boucle principale ---------- */
+  const bar = $('#navProgress');
+  let ticking = false;
+  function update() {
+    ticking = false;
     const vh = innerHeight;
     const max = document.documentElement.scrollHeight - vh;
-    bar.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
-
-    const heroP = Math.min(1, Math.max(0, scrollY / hero.offsetHeight));
-    if (!reduced) hero.style.setProperty('--hero', heroP.toFixed(3));
-    topbar.classList.toggle('solid', scrollY > hero.offsetHeight - 80);
-
-    // Étape active = celle qui croise la ligne de lecture
-    const line = isMobile() ? stage.offsetHeight + vh * 0.1 : vh * 0.6;
-    let active = 0;
-    steps.forEach((s, i) => { if (s.getBoundingClientRect().top <= line) active = i; });
-    setActive(active);
-
-    // Zoom lent de la photo active selon la progression dans l'étape
-    if (!reduced) {
-      const r = steps[active].getBoundingClientRect();
-      const p = Math.min(1, Math.max(0, (line - r.top) / r.height));
-      frameEls[active].style.setProperty('--p', p.toFixed(3));
-    }
-
-    const cr = cta.getBoundingClientRect();
-    if (!reduced && cr.top < vh && cr.bottom > 0) {
-      cta.style.setProperty('--cta', ((vh - cr.top) / (vh + cr.height) - 0.5).toFixed(3));
-    }
-    ticking = false;
+    bar.style.transform = `scaleX(${max > 0 ? (scrollY / max).toFixed(4) : 0})`;
+    updateHero(vh);
+    updateStatement(vh);
+    updateTour(vh);
+    updateParallax(vh);
   }
-  addEventListener('scroll', () => {
-    if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
-  }, { passive: true });
-  addEventListener('resize', onScroll);
-  onScroll();
+  const request = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+  if (lenis) lenis.on('scroll', request);
+  addEventListener('scroll', request, { passive: true });
+  addEventListener('resize', () => { measure(); request(); });
+  measure();
+  update();
+  document.fonts && document.fonts.ready.then(() => { measure(); update(); });
 
-  /* ---------- Léger effet de profondeur à la souris (desktop) ---------- */
-  if (!reduced && matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    stage.addEventListener('pointermove', (e) => {
-      const r = stage.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      stage.style.setProperty('--mx', `${(-x * 18).toFixed(1)}px`);
-      stage.style.setProperty('--my', `${(-y * 12).toFixed(1)}px`);
-    });
-    stage.addEventListener('pointerleave', () => {
-      stage.style.setProperty('--mx', '0px');
-      stage.style.setProperty('--my', '0px');
-    });
-  }
-
-  /* ---------- Apparitions + compteurs ---------- */
+  /* ---------- Apparitions et compteurs ---------- */
   const countUp = (el) => {
     const end = parseFloat(el.dataset.count);
     const dec = parseInt(el.dataset.decimals || '0', 10);
     const fmt = (v) => v.toFixed(dec).replace('.', ',');
     if (reduced) { el.textContent = fmt(end); return; }
     const t0 = performance.now();
-    const dur = 1400;
     const tick = (t) => {
-      const k = Math.min(1, (t - t0) / dur);
-      el.textContent = fmt(end * (1 - Math.pow(1 - k, 3)));
+      const k = clamp((t - t0) / 1600);
+      el.textContent = fmt(end * (1 - Math.pow(1 - k, 4)));
       if (k < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
@@ -150,47 +202,53 @@
       if (!e.isIntersecting) return;
       e.target.classList.add('in');
       $$('[data-count]', e.target).forEach(countUp);
-      if (e.target.matches('[data-count]')) countUp(e.target);
       io.unobserve(e.target);
     });
-  }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
   $$('.reveal').forEach((el) => io.observe(el));
 
-  /* ---------- Galerie ---------- */
-  const gallery = $('#gallery');
+  /* ---------- Galerie horizontale ---------- */
+  const carousel = $('#carousel');
   photos.forEach((p, i) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'reveal';
-    b.setAttribute('aria-label', `Agrandir : ${p.alt}`);
-    b.innerHTML = `<img src="${src(p.name, 800)}" srcset="${srcset(p.name)}" sizes="(max-width: 600px) 100vw, 33vw" alt="${p.alt}" loading="lazy" decoding="async">`;
-    b.addEventListener('click', () => openLightbox(i));
-    gallery.appendChild(b);
-    io.observe(b);
+    const fig = document.createElement('figure');
+    fig.className = 'shot';
+    fig.innerHTML = `<button type="button" class="shot-img" aria-label="Agrandir : ${p.alt}" style="aspect-ratio:${p.portrait ? '3 / 4' : '4 / 3'}"><img src="${src(p.name, 800)}" srcset="${srcset(p.name)}" sizes="(max-width: 760px) 90vw, 60vw" alt="${p.alt}" loading="lazy" decoding="async"></button><figcaption>${p.alt}<span>${p.note}</span></figcaption>`;
+    $('button', fig).addEventListener('click', () => openLightbox(i));
+    carousel.appendChild(fig);
   });
+  const prev = $('#carPrev');
+  const next = $('#carNext');
+  const step = () => Math.max(280, carousel.clientWidth * 0.7);
+  prev.addEventListener('click', () => carousel.scrollBy({ left: -step(), behavior: 'smooth' }));
+  next.addEventListener('click', () => carousel.scrollBy({ left: step(), behavior: 'smooth' }));
+  const updateArrows = () => {
+    prev.disabled = carousel.scrollLeft < 8;
+    next.disabled = carousel.scrollLeft + carousel.clientWidth > carousel.scrollWidth - 8;
+  };
+  carousel.addEventListener('scroll', updateArrows, { passive: true });
+  updateArrows();
 
-  /* ---------- Lightbox (clavier + swipe) ---------- */
+  /* ---------- Plein écran ---------- */
   const lb = $('#lightbox');
   const lbImg = $('#lbImg');
   const lbCap = $('#lbCaption');
   let lbIndex = 0;
-
   function show(i) {
     lbIndex = (i + photos.length) % photos.length;
     const p = photos[lbIndex];
+    lbImg.srcset = srcset(p.name);
+    lbImg.sizes = '94vw';
     lbImg.src = src(p.name, 1600);
     lbImg.alt = p.alt;
-    lbCap.textContent = `${p.alt} · ${lbIndex + 1}/${photos.length}`;
+    lbCap.textContent = `${p.alt} · ${lbIndex + 1} sur ${photos.length}`;
   }
   function openLightbox(i) {
     show(i);
     if (typeof lb.showModal === 'function') lb.showModal(); else lb.setAttribute('open', '');
-    document.body.style.overflow = 'hidden';
+    if (lenis) lenis.stop();
   }
-  function closeLightbox() {
-    if (typeof lb.close === 'function') lb.close(); else lb.removeAttribute('open');
-  }
-  lb.addEventListener('close', () => { document.body.style.overflow = ''; });
+  const closeLightbox = () => { if (typeof lb.close === 'function') lb.close(); else lb.removeAttribute('open'); };
+  lb.addEventListener('close', () => { if (lenis) lenis.start(); });
   $('#lbClose').addEventListener('click', closeLightbox);
   $('#lbPrev').addEventListener('click', () => show(lbIndex - 1));
   $('#lbNext').addEventListener('click', () => show(lbIndex + 1));
@@ -208,9 +266,5 @@
     sx = null;
     if (Math.abs(dx) > 50) show(lbIndex + (dx < 0 ? 1 : -1));
   });
-
-  $('#stageZoom').addEventListener('click', () => {
-    const name = steps[Math.max(0, current)].dataset.img;
-    openLightbox(photos.findIndex((p) => p.name === name));
-  });
+  $('#tourZoom').addEventListener('click', () => openLightbox(indexOf(slides[Math.max(0, current)].dataset.img)));
 })();
