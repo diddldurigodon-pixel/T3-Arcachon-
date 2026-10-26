@@ -106,131 +106,111 @@
     }
   }
 
-  /* ---------- Boucle principale ---------- */
-  const bar = $('#navProgress');
-  let ticking = false;
-  function update() {
-    ticking = false;
-    const vh = innerHeight;
-    const max = document.documentElement.scrollHeight - vh;
-    bar.style.transform = `scaleX(${max > 0 ? (scrollY / max).toFixed(4) : 0})`;
-    updateHero(vh);
-    updateStatement(vh);
-    updateParallax(vh);
-  }
-  const request = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
-  if (lenis) lenis.on('scroll', request);
-  addEventListener('scroll', request, { passive: true });
-  addEventListener('resize', () => { measure(); request(); });
-  measure();
-  update();
-  document.fonts && document.fonts.ready.then(() => { measure(); update(); });
-
-  /* ---------- Carte 3D ---------- */
-  const mapStage = $('#mapStage');
+  /* ---------- Carte 3D pilotée par le scroll ---------- */
+  const mapSection = $('#emplacement');
+  const mapHead = $('#mapHead');
+  const mapFrame = $('#mapFrame');
   const mapEl = $('#map');
-  const spinBtn = $('#mapSpin');
-  const viewBtns = $$('[data-view]', mapStage);
+  const caps = $$('.cap', mapFrame).map((el) => ({ el, range: el.dataset.range.split(',').map(Number) }));
+  const badges = $('#mapBadges');
+  const mapBar = $('#mapProgress');
   let map = null;
   let mapReady = false;
-  let introDone = false;
-  let stageVisible = false;
-  let spinning = false;
-  let userStopped = false;
-  let spinRaf = null;
-  let lastT = 0;
-  const views = {};
+  let mapData = null;
+  let fades = [];
 
-  function mapFail() {
-    $('#mapFallback').hidden = false;
-    mapStage.classList.add('ready');
-  }
+  function mapFail() { $('#mapFallback').hidden = false; badges.classList.add('show'); }
 
   function marker(cls, label) {
+    // MapLibre gère l'opacité du conteneur : l'apparition se fait sur l'élément intérieur
     const el = document.createElement('div');
-    el.className = `mk ${cls}`;
-    el.innerHTML = `<span class="mk-label">${label}</span><span class="mk-stem"></span>${cls.includes('mk-home') ? '<span class="mk-dot"></span>' : ''}`;
+    el.innerHTML = `<div class="mk mk-fade ${cls}"><span class="mk-label">${label}</span><span class="mk-stem"></span>${cls.includes('mk-home') ? '<span class="mk-dot"></span>' : ''}</div>`;
     return el;
   }
 
-  function spinStep(t) {
-    if (!spinning || !map) { spinRaf = null; return; }
-    const dt = lastT ? Math.min(64, t - lastT) : 16;
-    lastT = t;
-    map.setBearing(map.getBearing() + dt * 0.0045);
-    spinRaf = requestAnimationFrame(spinStep);
-  }
-  function setSpin(on) {
-    spinning = on && !reduced;
-    spinBtn.setAttribute('aria-pressed', String(spinning));
-    if (spinning && !spinRaf) { lastT = 0; spinRaf = requestAnimationFrame(spinStep); }
-  }
-
-  function goTo(name) {
-    viewBtns.forEach((b) => b.classList.toggle('active', b.dataset.view === name));
-    const wasSpinning = spinning;
-    setSpin(false);
-    map.flyTo({ ...views[name], duration: reduced ? 0 : 2600, curve: 1.3, essential: true });
-    map.once('moveend', () => { if (wasSpinning || !userStopped) setSpin(stageVisible && !userStopped); });
-  }
-
-  function intro() {
-    if (introDone || !mapReady || !stageVisible) return;
-    introDone = true;
-    const reveal = () => {
-      mapStage.classList.add('ready');
-      $$('.mk-fade', mapStage).forEach((m) => m.classList.add('show'));
-      growLine();
-      viewBtns.forEach((b) => b.classList.toggle('active', b.dataset.view === 'home'));
-      setSpin(!userStopped);
+  // Trajet de la caméra : du ciel au-dessus du bassin jusqu'à l'appartement, en tournant
+  let keys = [];
+  const lerp = (a, b, t) => a + (b - a) * t;
+  function camera(c) {
+    let k = 0;
+    while (k < keys.length - 2 && c > keys[k + 1].c) k++;
+    const A = keys[k], B = keys[k + 1];
+    const t = ease(clamp((c - A.c) / (B.c - A.c)));
+    return {
+      center: [lerp(A.center[0], B.center[0], t), lerp(A.center[1], B.center[1], t)],
+      zoom: lerp(A.zoom, B.zoom, t),
+      pitch: lerp(A.pitch, B.pitch, t),
+      bearing: lerp(keys[0].bearing, keys[keys.length - 1].bearing, c),
     };
-    if (reduced) { map.jumpTo(views.home); reveal(); return; }
-    map.flyTo({ ...views.home, duration: 6500, curve: 1.5, essential: true });
-    map.once('moveend', reveal);
   }
 
-  let line = null;
-  function growLine() {
-    if (!line) return;
-    const [a, b] = line;
-    const src = map.getSource('dist');
-    const t0 = performance.now();
-    const step = (t) => {
-      const k = reduced ? 1 : ease(clamp((t - t0) / 1400));
-      src.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [a, [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k]] } });
-      if (k < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
+  let lineK = -1;
+  function setLine(k) {
+    if (!map || Math.abs(k - lineK) < 0.002) return;
+    lineK = k;
+    const [a, b] = mapData.meta.beach_line;
+    map.getSource('dist').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [a, [lerp(a[0], b[0], k), lerp(a[1], b[1], k)]] } });
+  }
+
+  let mapHeadBottom = 0;
+  const measureMap = () => { mapHeadBottom = mapHead.offsetTop + mapHead.offsetHeight; };
+
+  function updateMap(vh) {
+    const r = mapSection.getBoundingClientRect();
+    if (r.bottom < -vh || r.top > vh * 2) return;
+    const P = reduced ? 1 : clamp(-r.top / (r.height - vh));
+    // 1. la carte s'agrandit jusqu'au plein écran
+    const e = ease(clamp(P / 0.14));
+    const t0 = Math.min(mapHeadBottom + (isMobile() ? 24 : 40), vh * 0.6);
+    const s0 = isMobile() ? 16 : Math.max(32, innerWidth * 0.09);
+    const b0 = isMobile() ? 20 : vh * 0.05;
+    if (!reduced) {
+      mapFrame.style.clipPath = `inset(${(t0 * (1 - e)).toFixed(1)}px ${(s0 * (1 - e)).toFixed(1)}px ${(b0 * (1 - e)).toFixed(1)}px ${(s0 * (1 - e)).toFixed(1)}px round ${(28 * (1 - e)).toFixed(1)}px)`;
+      mapHead.style.opacity = (1 - clamp(e * 1.8)).toFixed(3);
+      mapHead.style.transform = `translateY(${(-e * 60).toFixed(1)}px)`;
+    }
+    // 2. la caméra tourne et zoome
+    const c = clamp((P - 0.06) / 0.88);
+    mapBar.style.transform = `scaleX(${c.toFixed(4)})`;
+    caps.forEach(({ el, range: [a, b] }) => {
+      const o = Math.min(clamp((c - a) / 0.05), clamp((b - c) / 0.05));
+      el.style.opacity = o.toFixed(3);
+      el.style.transform = `translateY(${((1 - o) * (c < a + 0.05 ? 30 : -30)).toFixed(1)}px)`;
+    });
+    badges.classList.toggle('show', c > 0.86);
+    if (!mapReady) return;
+    map.jumpTo(camera(c));
+    fades.forEach(([el, from]) => el.classList.toggle('show', c >= from));
+    setLine(ease(clamp((c - 0.5) / 0.2)));
   }
 
   function initMap(data) {
+    mapData = data;
     const m = data.meta;
-    views.home = { center: m.house, zoom: 16.9, pitch: isMobile() ? 56 : 62, bearing: 32 };
-    views.overview = { center: [-1.1455, 44.6578], zoom: isMobile() ? 14.1 : 14.7, pitch: 50, bearing: -18 };
-    line = m.beach_line;
-    $$('[data-dist]', mapStage).forEach((el) => { if (m[el.dataset.dist] != null) el.textContent = m[el.dataset.dist]; });
+    $$('[data-dist]', mapSection).forEach((el) => { if (m[el.dataset.dist] != null) el.textContent = m[el.dataset.dist]; });
+    const mob = isMobile();
+    keys = [
+      { c: 0, center: [-1.1470, 44.6590], zoom: mob ? 13.7 : 14.1, pitch: 25, bearing: -40 },
+      { c: 0.3, center: m.marina || m.house, zoom: mob ? 14.9 : 15.4, pitch: 48 },
+      { c: 0.62, center: [lerp(m.house[0], m.beach_line[1][0], 0.5), lerp(m.house[1], m.beach_line[1][1], 0.5)], zoom: mob ? 16.2 : 16.5, pitch: 58 },
+      { c: 0.9, center: m.house, zoom: mob ? 17.2 : 17.5, pitch: 66 },
+      { c: 1, center: m.house, zoom: mob ? 17.3 : 17.6, pitch: 66, bearing: 200 },
+    ];
 
     map = new window.maplibregl.Map({
       container: mapEl,
       style: { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#1a1a1c' } }] },
-      center: [-1.1468, 44.6585],
-      zoom: isMobile() ? 13.2 : 13.6,
-      pitch: 0,
-      bearing: -25,
-      maxPitch: 72,
-      minZoom: 12.8,
-      maxZoom: 18.5,
-      maxBounds: [[-1.19, 44.63], [-1.10, 44.68]],
+      ...camera(0),
+      maxPitch: 75,
+      interactive: false,
       attributionControl: false,
       fadeDuration: 0,
     });
     map.addControl(new window.maplibregl.AttributionControl({ compact: true, customAttribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }));
-    map.scrollZoom.disable();
-    if (matchMedia('(pointer: coarse)').matches) map.dragPan.disable();
 
     map.on('load', () => {
       ['sea', 'water', 'beach', 'green', 'piers', 'roads', 'paths', 'buildings'].forEach((k) => map.addSource(k, { type: 'geojson', data: data[k] }));
-      map.addSource('dist', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [line[0], line[0]] } } });
+      map.addSource('dist', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [m.beach_line[0], m.beach_line[0]] } } });
       map.addSource('home', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'Point', coordinates: m.house } } });
 
       map.addLayer({ id: 'sea', type: 'fill', source: 'sea', paint: { 'fill-color': '#0d2f52' } });
@@ -243,8 +223,8 @@
         'line-color': ['case', ['==', ['get', 'c'], 1], '#4a4a50', '#36363b'],
         'line-width': ['interpolate', ['exponential', 1.6], ['zoom'], 13, ['case', ['==', ['get', 'c'], 1], 1.4, 0.7], 17, ['case', ['==', ['get', 'c'], 1], 12, 7], 18.5, ['case', ['==', ['get', 'c'], 1], 26, 15]],
       } });
-      map.addLayer({ id: 'home-glow', type: 'circle', source: 'home', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 10, 17, 70], 'circle-color': '#2997ff', 'circle-opacity': 0.22, 'circle-blur': 1 } });
-      map.addLayer({ id: 'dist', type: 'line', source: 'dist', layout: { 'line-cap': 'round' }, paint: { 'line-color': '#f5d48a', 'line-width': 3.5, 'line-dasharray': [0.1, 2] } });
+      map.addLayer({ id: 'home-glow', type: 'circle', source: 'home', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 10, 17, 70, 18, 120], 'circle-color': '#2997ff', 'circle-opacity': 0.25, 'circle-blur': 1 } });
+      map.addLayer({ id: 'dist', type: 'line', source: 'dist', layout: { 'line-cap': 'round' }, paint: { 'line-color': '#f5d48a', 'line-width': 4, 'line-dasharray': [0.1, 2] } });
       map.addLayer({ id: 'buildings', type: 'fill-extrusion', source: 'buildings', paint: {
         'fill-extrusion-color': ['case', ['==', ['get', 'me'], 1], '#2997ff', ['interpolate', ['linear'], ['get', 'h'], 3, '#2b2b2f', 10, '#3a3a40', 20, '#4d4d55']],
         'fill-extrusion-height': ['get', 'h'],
@@ -254,27 +234,20 @@
       } });
       map.setLight({ anchor: 'map', color: '#ffffff', intensity: 0.42, position: [1.4, 210, 35] });
 
-      new window.maplibregl.Marker({ element: marker('mk-home', "L'appartement"), anchor: 'bottom', offset: [0, 8] }).setLngLat(m.house).addTo(map);
-      new window.maplibregl.Marker({ element: marker('mk-beach mk-fade', `Plage · ${m.beach_m} m`), anchor: 'bottom' }).setLngLat(line[1]).addTo(map);
-      if (m.marina) new window.maplibregl.Marker({ element: marker('mk-fade', 'Port de plaisance'), anchor: 'bottom' }).setLngLat(m.marina).addTo(map);
+      const add = (el, ll, from) => {
+        new window.maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(ll).addTo(map);
+        fades.push([el.firstChild, from]);
+      };
+      if (m.marina) add(marker('', 'Port de plaisance'), m.marina, 0.27);
+      add(marker('mk-beach', `Plage · ${m.beach_m} m`), m.beach_line[1], 0.6);
+      add(marker('mk-home', "L'appartement"), m.house, 0.12);
 
       mapReady = true;
-      intro();
+      request();
     });
-
-    const stopByUser = (e) => { if (e.originalEvent) { userStopped = true; setSpin(false); viewBtns.forEach((b) => b.classList.remove('active')); } };
-    map.on('dragstart', stopByUser);
-    map.on('rotatestart', stopByUser);
-    map.on('pitchstart', stopByUser);
-    map.on('zoomstart', stopByUser);
   }
 
-  spinBtn.addEventListener('click', () => {
-    userStopped = spinning;
-    setSpin(!spinning);
-  });
-  viewBtns.forEach((b) => b.addEventListener('click', () => { if (map && mapReady) goTo(b.dataset.view); }));
-
+  measureMap();
   new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       if (!e.isIntersecting || map) return;
@@ -284,15 +257,28 @@
         .then(initMap)
         .catch(mapFail);
     });
-  }, { rootMargin: '600px 0px' }).observe(mapStage);
+  }, { rootMargin: '1200px 0px' }).observe(mapSection);
 
-  new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      stageVisible = e.isIntersecting;
-      if (stageVisible) { intro(); if (introDone && !userStopped) setSpin(true); }
-      else setSpin(false);
-    });
-  }, { threshold: 0.45 }).observe(mapStage);
+  /* ---------- Boucle principale ---------- */
+  const bar = $('#navProgress');
+  let ticking = false;
+  function update() {
+    ticking = false;
+    const vh = innerHeight;
+    const max = document.documentElement.scrollHeight - vh;
+    bar.style.transform = `scaleX(${max > 0 ? (scrollY / max).toFixed(4) : 0})`;
+    updateHero(vh);
+    updateStatement(vh);
+    updateParallax(vh);
+    updateMap(vh);
+  }
+  const request = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+  if (lenis) lenis.on('scroll', request);
+  addEventListener('scroll', request, { passive: true });
+  addEventListener('resize', () => { measure(); measureMap(); request(); });
+  measure();
+  update();
+  document.fonts && document.fonts.ready.then(() => { measure(); measureMap(); update(); });
 
   /* ---------- Apparitions et compteurs ---------- */
   const countUp = (el) => {

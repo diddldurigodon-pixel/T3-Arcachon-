@@ -147,33 +147,33 @@
     </div>
   </section>
 
-  <!-- EMPLACEMENT : carte 3D animée -->
-  <section class="map-section" id="emplacement">
-    <div class="wrap map-head">
-      <p class="kicker reveal">Emplacement</p>
-      <h2 class="section-title reveal">Côté port.<br><span class="muted-dark">Côté plage.</span></h2>
-    </div>
-    <div class="map-stage" id="mapStage">
-      <div class="map" id="map" role="img" aria-label="Vue 3D du quartier de l'Aiguillon à Arcachon, avec l'appartement, la plage, le bassin et le port de plaisance"></div>
-      <div class="map-badges" id="mapBadges">
-        <div class="badge"><b><span data-dist="sea_m">140</span> m</b><span>du bassin</span></div>
-        <div class="badge"><b><span data-dist="beach_m">181</span> m</b><span>de la plage</span></div>
-        <div class="badge"><b><span data-dist="marina_m">128</span> m</b><span>du port</span></div>
+  <!-- EMPLACEMENT : carte 3D pilotée par le scroll -->
+  <section class="map-scroll" id="emplacement" aria-label="Emplacement">
+    <div class="map-sticky">
+      <div class="map-head" id="mapHead">
+        <p class="kicker">Emplacement</p>
+        <h2 class="section-title">Côté port.<br><span class="grad">Côté plage.</span></h2>
       </div>
-      <div class="map-ctrl">
-        <button class="chip" type="button" data-view="overview">Vue d'ensemble</button>
-        <button class="chip" type="button" data-view="home">L'appartement</button>
-        <button class="chip chip-icon" type="button" id="mapSpin" aria-pressed="false" aria-label="Lancer ou arrêter la rotation">
-          <svg class="i-pause" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"/></svg>
-          <svg class="i-play" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
-        </button>
+      <div class="map-frame" id="mapFrame">
+        <div class="map" id="map" role="img" aria-label="Vue 3D du quartier de l'Aiguillon à Arcachon, avec l'appartement, la plage, le bassin et le port de plaisance"></div>
+        <div class="map-vignette" aria-hidden="true"></div>
+        <div class="map-captions" aria-live="polite">
+          <p class="cap" data-range="0,0.24"><span>Vu du ciel</span>Le bassin d'Arcachon.</p>
+          <p class="cap" data-range="0.27,0.5"><span>À <b data-dist="marina_m">128</b> m</span>Le port de plaisance.</p>
+          <p class="cap" data-range="0.53,0.76"><span>À <b data-dist="beach_m">181</b> m</span>La plage.</p>
+          <p class="cap" data-range="0.8,1.3"><span>Boulevard Chanzy</span>Et au milieu, votre T3.</p>
+        </div>
+        <div class="map-badges" id="mapBadges">
+          <div class="badge"><b><span data-dist="sea_m">140</span> m</b><span>du bassin</span></div>
+          <div class="badge"><b><span data-dist="beach_m">181</span> m</b><span>de la plage</span></div>
+          <div class="badge"><b><span data-dist="marina_m">128</span> m</b><span>du port</span></div>
+        </div>
+        <div class="map-progress" aria-hidden="true"><span id="mapProgress"></span></div>
+        <p class="map-fallback" id="mapFallback" hidden>La carte 3D n'a pas pu se charger sur cet appareil.</p>
       </div>
-      <p class="map-fallback" id="mapFallback" hidden>La carte 3D n'a pas pu se charger sur cet appareil.</p>
-    </div>
-    <div class="wrap">
-      <p class="map-note">Distances à vol d'oiseau mesurées sur OpenStreetMap. Hauteurs des bâtiments estimées.</p>
     </div>
   </section>
+  <p class="map-note">Distances à vol d'oiseau mesurées sur OpenStreetMap. Hauteurs des bâtiments estimées.</p>
 
   <section class="light" id="a-pied">
     <div class="wrap">
