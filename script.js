@@ -6,6 +6,9 @@
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const src = (name, w) => `assets/img/${name}-${w}.webp`;
+  // Écart entre le scroll réel et le scroll amorti suivi par les animations
+  let lag = 0;
+  const box = (el) => { const b = el.getBoundingClientRect(); return { top: b.top + lag, bottom: b.bottom + lag, height: b.height }; };
   const srcset = (name) => `${src(name, 800)} 800w, ${src(name, 1600)} 1600w, ${src(name, 2400)} 2400w`;
 
   /* ---------- Photos ---------- */
@@ -27,7 +30,7 @@
   /* ---------- Défilement fluide ---------- */
   let lenis = null;
   if (!reduced && window.Lenis) {
-    lenis = new window.Lenis({ lerp: 0.085, smoothWheel: true });
+    lenis = new window.Lenis({ lerp: 0, duration: 1.5, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
     const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
     requestAnimationFrame(raf);
   }
@@ -53,7 +56,7 @@
   const measure = () => { headBottom = head.offsetTop + head.offsetHeight; };
 
   function updateHero(vh) {
-    const r = hero.getBoundingClientRect();
+    const r = box(hero);
     if (r.bottom < 0 || reduced) return;
     const p = clamp(-r.top / (hero.offsetHeight - vh));
     const e = ease(clamp(p / 0.7));
@@ -80,7 +83,7 @@
   let litCount = -1;
   function updateStatement(vh) {
     if (reduced) return;
-    const r = stText.getBoundingClientRect();
+    const r = box(stText);
     if (r.top > vh || r.bottom < 0) return;
     const p = clamp((vh * 0.78 - r.top) / (r.height + vh * 0.2));
     const n = Math.round(p * words.length);
@@ -95,12 +98,12 @@
   function updateParallax(vh) {
     if (reduced) return;
     tilePhotos.forEach((t) => {
-      const r = t.getBoundingClientRect();
+      const r = box(t);
       if (r.bottom < 0 || r.top > vh) return;
       const p = clamp((vh - r.top) / (vh + r.height));
       t.style.setProperty('--s', (1.14 - 0.14 * p).toFixed(4));
     });
-    const r = finale.getBoundingClientRect();
+    const r = box(finale);
     if (r.top < vh && r.bottom > 0) {
       finale.style.setProperty('--fz', (1.18 - 0.18 * clamp((vh - r.top) / vh)).toFixed(4));
     }
@@ -128,7 +131,7 @@
     return el;
   }
 
-  // Trajet de la caméra : du ciel au-dessus du bassin jusqu'à l'appartement, en tournant
+  // Trajet de la caméra : du ciel au-dessus du bassin jusqu'au T3, en tournant
   let keys = [];
   const lerp = (a, b, t) => a + (b - a) * t;
   function camera(c) {
@@ -156,7 +159,7 @@
   const measureMap = () => { mapHeadBottom = mapHead.offsetTop + mapHead.offsetHeight; };
 
   function updateMap(vh) {
-    const r = mapSection.getBoundingClientRect();
+    const r = box(mapSection);
     if (r.bottom < -vh || r.top > vh * 2) return;
     const P = reduced ? 1 : clamp(-r.top / (r.height - vh));
     // 1. la carte s'agrandit jusqu'au plein écran
@@ -240,7 +243,7 @@
       };
       if (m.marina) add(marker('', 'Port de plaisance'), m.marina, 0.27);
       add(marker('mk-beach', `Plage · ${m.beach_m} m`), m.beach_line[1], 0.6);
-      add(marker('mk-home', "L'appartement"), m.house, 0.12);
+      add(marker('mk-home', 'Le T3'), m.house, 0.12);
 
       mapReady = true;
       request();
@@ -261,18 +264,27 @@
 
   /* ---------- Boucle principale ---------- */
   const bar = $('#navProgress');
-  let ticking = false;
+  let sy = scrollY;
+  let running = false;
   function update() {
-    ticking = false;
     const vh = innerHeight;
     const max = document.documentElement.scrollHeight - vh;
-    bar.style.transform = `scaleX(${max > 0 ? (scrollY / max).toFixed(4) : 0})`;
+    bar.style.transform = `scaleX(${max > 0 ? clamp(sy / max).toFixed(4) : 0})`;
     updateHero(vh);
     updateStatement(vh);
     updateParallax(vh);
     updateMap(vh);
   }
-  const request = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+  // Inertie : les animations rattrapent le scroll en douceur au lieu de s'arrêter net
+  function frame() {
+    const target = scrollY;
+    sy = reduced ? target : sy + (target - sy) * 0.085;
+    if (Math.abs(target - sy) < 0.3) sy = target;
+    lag = target - sy;
+    update();
+    if (sy !== target) requestAnimationFrame(frame); else running = false;
+  }
+  const request = () => { if (!running) { running = true; requestAnimationFrame(frame); } };
   if (lenis) lenis.on('scroll', request);
   addEventListener('scroll', request, { passive: true });
   addEventListener('resize', () => { measure(); measureMap(); request(); });
