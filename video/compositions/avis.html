@@ -32,7 +32,7 @@
     tl.fromTo(n, { v: 0 }, { v: 4.86, duration: 1.4, ease: "power3.out", onUpdate: () => { document.querySelector("#av-n").textContent = n.v.toFixed(2).replace(".", ","); } }, 0.3);
     tl.fromTo("#av-stars span", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)", stagger: 0.08 }, 1.5);
     tl.fromTo("#av-s", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.07 }, 2.0);
-    tl.to("#av-k, #av-n, #av-stars, #av-s", { opacity: 0, filter: "blur(8px)", duration: 0.25, ease: "power3.in" }, 3.7);
+    tl.to("#av-k, #av-n, #av-stars, #av-s", { opacity: 0, filter: "blur(8px)", duration: 0.25, ease: "power3.in" }, 4.7);
 
     window.__timelines["avis"] = tl;
   </script>
