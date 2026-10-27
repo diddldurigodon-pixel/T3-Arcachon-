@@ -1,0 +1,97 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #000; overflow: hidden; font-family: Inter, sans-serif; color: #f5f5f7; }
+    .ph { position: absolute; inset: 0; overflow: hidden; }
+    .kb { position: absolute; inset: 0; }
+    .kb img { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+    .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 45%, rgba(0,0,0,.85) 100%); }
+    .cap { position: absolute; left: 150px; bottom: 140px; }
+    .cap .k { font-size: 30px; font-weight: 600; color: #2997ff; letter-spacing: -.01em; margin-bottom: 10px; }
+    .cap .t { font-size: 86px; font-weight: 700; letter-spacing: -.045em; line-height: 1.02; }
+    .w { display: inline-block; }
+    .grad { background: linear-gradient(92deg, #8fd3ff 0%, #2997ff 45%, #7ad7c7 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+    #t3-intro { position: absolute; inset: 0; text-align: center; }
+    #t3-k { position: absolute; left: 0; right: 0; top: 330px; font-size: 40px; font-weight: 600; color: #2997ff; }
+    #t3-t { position: absolute; left: 0; right: 0; top: 400px; font-size: 170px; font-weight: 700; letter-spacing: -.05em; }
+    #t3-s { position: absolute; left: 0; right: 0; top: 640px; font-size: 44px; color: #a1a1a6; }
+
+  </style>
+  <div id="root" data-composition-id="t3" data-width="1920" data-height="1080">
+    <div id="t3-intro" class="clip" data-start="0" data-duration="3">
+      <div id="t3-k">Le T3</div>
+      <div id="t3-t"><span class="w">Neuf.</span> <span class="w">Lumineux.</span></div>
+      <div id="t3-s">50 m² · 2 chambres · 4 voyageurs</div>
+    </div>
+    <div id="t3-jar" class="ph clip" data-start="3.0" data-duration="2.483">
+      <div class="kb" id="t3-jar-kb"><img src="assets/img/jardin-1-1600.webp" alt="" style="object-position:50% 55%"></div>
+      <div class="shade"></div>
+      <div class="cap" id="t3-jar-cap"><div class="k">Extérieur</div><div class="t"><span class="w">Jardin</span> <span class="w">privé.</span> <span class="w">Plein</span> <span class="w">sud.</span></div></div>
+    </div>
+    <div id="t3-sej" class="ph clip" data-start="5.333" data-duration="2.483">
+      <div class="kb" id="t3-sej-kb"><img src="assets/img/sejour-mezzanine-1600.webp" alt="" style="object-position:50% 40%"></div>
+      <div class="shade"></div>
+      <div class="cap" id="t3-sej-cap"><div class="k">Intérieur</div><div class="t"><span class="w">Du</span> <span class="w">volume.</span> <span class="w">De</span> <span class="w">la</span> <span class="w">lumière.</span></div></div>
+    </div>
+    <div id="t3-cui" class="ph clip" data-start="7.667" data-duration="2.483">
+      <div class="kb" id="t3-cui-kb"><img src="assets/img/sejour-1600.webp" alt="" style="object-position:50% 50%"></div>
+      <div class="shade"></div>
+      <div class="cap" id="t3-cui-cap"><div class="k">Pièce de vie</div><div class="t"><span class="w">Cuisine</span> <span class="w">ouverte,</span> <span class="w">équipée.</span></div></div>
+    </div>
+    <div id="t3-ch" class="ph clip" data-start="10.0" data-duration="2.483">
+      <div class="kb" id="t3-ch-kb"><img src="assets/img/chambre-1600.webp" alt="" style="object-position:50% 65%"></div>
+      <div class="shade"></div>
+      <div class="cap" id="t3-ch-cap"><div class="k">Chambre</div><div class="t"><span class="w">Deux</span> <span class="w">lits</span> <span class="w">superposés.</span></div></div>
+    </div>
+    <div id="t3-mez" class="ph clip" data-start="12.333" data-duration="2.483">
+      <div class="kb" id="t3-mez-kb"><img src="assets/img/mezzanine-lit-1600.webp" alt="" style="object-position:50% 50%"></div>
+      <div class="shade"></div>
+      <div class="cap" id="t3-mez-cap"><div class="k">Mezzanine</div><div class="t"><span class="w">Un</span> <span class="w">grand</span> <span class="w">lit</span> <span class="w">en</span> <span class="w">140.</span></div></div>
+    </div>
+    <div id="t3-sde" class="ph clip" data-start="14.667" data-duration="2.333">
+      <div class="kb" id="t3-sde-kb"><img src="assets/img/salle-eau-1600.webp" alt="" style="object-position:50% 50%"></div>
+      <div class="shade"></div>
+      <div class="cap" id="t3-sde-cap"><div class="k">Salle d'eau</div><div class="t"><span class="w">Neuve.</span> <span class="w">WC</span> <span class="w">séparés.</span></div></div>
+    </div>
+
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#t3-k", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.07 }, 0.2);
+    tl.fromTo("#t3-t .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.1 }, 0.45);
+    tl.fromTo("#t3-s", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.07 }, 1.0);
+    tl.to("#t3-intro > div", { opacity: 0, filter: "blur(8px)", duration: 0.22, ease: "power3.in" }, 2.7);
+    tl.fromTo("#t3-jar-kb", { scale: 1.0, x: 0 }, { scale: 1.08, x: 0, duration: 2.483, ease: "none" }, 3.0);
+    tl.fromTo("#t3-jar-kb", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.inOut" }, 3.0);
+    tl.fromTo("#t3-jar-cap .k", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out" }, 3.25);
+    tl.fromTo("#t3-jar-cap .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.07 }, 3.37);
+    tl.to("#t3-jar-cap", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power3.in" }, 5.18);
+    tl.fromTo("#t3-sej-kb", { scale: 1.08, x: 0 }, { scale: 1.0, x: 0, duration: 2.483, ease: "none" }, 5.333);
+    tl.fromTo("#t3-sej-kb", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.inOut" }, 5.333);
+    tl.fromTo("#t3-sej-cap .k", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out" }, 5.583);
+    tl.fromTo("#t3-sej-cap .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.07 }, 5.7);
+    tl.to("#t3-sej-cap", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power3.in" }, 7.52);
+    tl.fromTo("#t3-cui-kb", { scale: 1.02, x: -30 }, { scale: 1.08, x: 30, duration: 2.483, ease: "none" }, 7.667);
+    tl.fromTo("#t3-cui-kb", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.inOut" }, 7.667);
+    tl.fromTo("#t3-cui-cap .k", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out" }, 7.917);
+    tl.fromTo("#t3-cui-cap .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.07 }, 8.04);
+    tl.to("#t3-cui-cap", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power3.in" }, 9.85);
+    tl.fromTo("#t3-ch-kb", { scale: 1.0, x: 0 }, { scale: 1.07, x: 0, duration: 2.483, ease: "none" }, 10.0);
+    tl.fromTo("#t3-ch-kb", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.inOut" }, 10.0);
+    tl.fromTo("#t3-ch-cap .k", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out" }, 10.25);
+    tl.fromTo("#t3-ch-cap .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.07 }, 10.37);
+    tl.to("#t3-ch-cap", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power3.in" }, 12.18);
+    tl.fromTo("#t3-mez-kb", { scale: 1.02, x: 30 }, { scale: 1.08, x: -30, duration: 2.483, ease: "none" }, 12.333);
+    tl.fromTo("#t3-mez-kb", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.inOut" }, 12.333);
+    tl.fromTo("#t3-mez-cap .k", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out" }, 12.583);
+    tl.fromTo("#t3-mez-cap .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.07 }, 12.7);
+    tl.to("#t3-mez-cap", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power3.in" }, 14.52);
+    tl.fromTo("#t3-sde-kb", { scale: 1.08, x: 0 }, { scale: 1.0, x: 0, duration: 2.333, ease: "none" }, 14.667);
+    tl.fromTo("#t3-sde-kb", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.inOut" }, 14.667);
+    tl.fromTo("#t3-sde-cap .k", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out" }, 14.917);
+    tl.fromTo("#t3-sde-cap .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.07 }, 15.04);
+    tl.to("#t3-sde-cap", { opacity: 0, filter: "blur(8px)", duration: 0.25, ease: "power3.in" }, 16.7);
+
+    window.__timelines["t3"] = tl;
+  </script>
+</template>

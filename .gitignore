@@ -1,2 +1,4 @@
 .vercel
 .env*
+video/.hyperframes/
+video/node_modules/

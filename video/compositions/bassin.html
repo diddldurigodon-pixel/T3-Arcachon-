@@ -1,0 +1,36 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: #000; overflow: hidden; font-family: Inter, sans-serif; color: #f5f5f7; }
+    .ph { position: absolute; inset: 0; overflow: hidden; }
+    .kb { position: absolute; inset: 0; }
+    .kb img { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+    .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 45%, rgba(0,0,0,.85) 100%); }
+    .cap { position: absolute; left: 150px; bottom: 140px; }
+    .cap .k { font-size: 30px; font-weight: 600; color: #2997ff; letter-spacing: -.01em; margin-bottom: 10px; }
+    .cap .t { font-size: 86px; font-weight: 700; letter-spacing: -.045em; line-height: 1.02; }
+    .w { display: inline-block; }
+    .grad { background: linear-gradient(92deg, #8fd3ff 0%, #2997ff 45%, #7ad7c7 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+    #bas-title { position: absolute; left: 150px; bottom: 150px; font-size: 120px; font-weight: 700; letter-spacing: -.05em; line-height: 1.0; }
+    #bas-ph .cap { display: none; }
+
+  </style>
+  <div id="root" data-composition-id="bassin" data-width="1920" data-height="1080">
+    <div id="bas-ph" class="ph clip" data-start="0" data-duration="5">
+      <div class="kb" id="bas-ph-kb"><img src="assets/img/bassin-2400.webp" alt="" style="object-position:50% 60%"></div>
+      <div class="shade"></div>
+      <div class="cap" id="bas-ph-cap"><div class="k"></div><div class="t"></div></div>
+    </div>
+    <div id="bas-title"><div id="bas-l1"><span class="w">Le</span> <span class="w">bassin.</span></div><div id="bas-l2" class="grad">Au bout de la rue.</div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#bas-ph-kb", { scale: 1.0, x: 0 }, { scale: 1.1, x: 0, duration: 5, ease: "none" }, 0);
+    tl.fromTo("#bas-ph-kb", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.inOut" }, 0);
+    tl.fromTo("#bas-l1 .w", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", stagger: 0.08 }, 0.6);
+    tl.fromTo("#bas-l2", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "power3.out" }, 1.3);
+    tl.to("#bas-title", { opacity: 0, filter: "blur(8px)", duration: 0.25, ease: "power3.in" }, 4.7);
+
+    window.__timelines["bassin"] = tl;
+  </script>
+</template>
